@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Guides</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link rel="stylesheet" href="map-ui.css" /> 
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.19.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.19.0/mapbox-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+<style>
+	body { margin: 0; padding: 0; }
+	#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+
+	
+		/* Welcome card — position top-right */
+		#map-welcome-card {
+			position: absolute;
+			top: 16px;
+			right: 16px;
+			z-index: 10;
+			width: 300px;
+		}
+
+		/* Welcome card minimized — hide body and footer, shrink to header width */
+		#map-welcome-card.is-minimized .map-card-body,
+		#map-welcome-card.is-minimized .map-card-footer {
+			display: none;
+		}
+		#map-welcome-card.is-minimized {
+			width: auto;
+		}
+
+		/* Legend minimized — collapse to a vertical tab pinned to the right edge */
+		#map-legend.is-minimized {
+			width: auto;
+			bottom: auto;
+			right: 0;          /* flush against the right edge of the map */
+			left: auto;
+			top: 50%;
+			transform: translateY(-50%);
+			border-radius: 8px 0 0 8px;  /* flat on the right, rounded on the left */
+			cursor: pointer;
+		}
+
+		/* Hide the layer rows and footer when minimized */
+		#map-legend.is-minimized .map-card-body {
+			display: none;
+		}
+
+	/* ── Legend panel ── */
+	#legend {
+		position: absolute;
+		bottom: 30px;
+		right: 16px;
+		background: rgba(20, 20, 20, 0.88);
+		color: #fff;
+		padding: 14px 16px;
+		border-radius: 8px;
+		font-family: sans-serif;
+		font-size: 13px;
+		z-index: 10;
+		min-width: 230px;
+		box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+	}
+
+	#legend h4 {
+		margin: 0 0 12px 0;
+		font-size: 14px;
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		border-bottom: 1px solid rgba(255,255,255,0.15);
+		padding-bottom: 8px;
+	}
+
+	.legend-row {
+		display: flex;
+		align-items: center;
+		gap: 9px;
+		margin-bottom: 10px;
+	}
+
+	.legend-row:last-child {
+		margin-bottom: 0;
+	}
+
+	.legend-swatch {
+		width: 14px;
+		height: 14px;
+		border-radius: 3px;
+		flex-shrink: 0;
+		border: 1px solid rgba(255,255,255,0.25);
+	}
+
+	.legend-label {
+		flex: 1;
+		font-size: 12.5px;
+		line-height: 1.2;
+	}
+
+	/* Toggle switch */
+	.toggle {
+		position: relative;
+		display: inline-block;
+		width: 36px;
+		height: 20px;
+		flex-shrink: 0;
+	}
+
+	.toggle input {
+		opacity: 0;
+		width: 0;
+		height: 0;
+	}
+
+	.slider {
+		position: absolute;
+		cursor: pointer;
+		inset: 0;
+		background: #555;
+		border-radius: 20px;
+		transition: background 0.25s;
+	}
+
+	.slider:before {
+		content: '';
+		position: absolute;
+		width: 14px;
+		height: 14px;
+		left: 3px;
+		bottom: 3px;
+		background: white;
+		border-radius: 50%;
+		transition: transform 0.25s;
+	}
+
+	.toggle input:checked + .slider {
+		background: #4a9e6b;
+	}
+
+	.toggle input:checked + .slider:before {
+		transform: translateX(16px);
+	}
+
+	/* Dim the row label when toggled off */
+	.legend-row.is-off .legend-label,
+	.legend-row.is-off .legend-swatch {
+		opacity: 0.4;
+	}
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+//Welcome card with background information
+<div id="welcome-overlay" class="ui-fade-in">
+  <div class="map-card welcome-card">
+
+    <!-- Header -->
+    <div class="map-card-header">
+      <div class="map-card-title">About This Map</div>
+      <button class="map-close-btn" id="welcome-close">×</button>
+    </div>
+
+    <!-- Body -->
+    <div class="map-card-body">
+
+      <div class="map-section-label">Overview</div>
+      <p class="welcome-text">
+        This interactive map shows proposed and historical logging activity
+        surrounding the Tsitka and, Adam and Eve watersheds.  
+		</p>
+
+		<div class="map-section-label">Included Layers</div>
+		<p class="welcome-text">
+			<span style="color:red; font-weight:600;">RED</span> stripped polygons indicate areas where logging is proposed to take place.
+			<!-- <span style="color:#eb0e96; font-weight:600;">PINK</span> polygons have been created to highlight areas where proposed cutblocks are placed in TAP Priority Deferral areas. -->
+			Old Growth Management Areas are shown using <span style="color:grey; font-weight:600;">BLACK</span> horizontal lines. These are areas where logging is prevented or restrained. 
+			<span style="color:whitesmoke; font-weight:600;">WHITE</span> dotted polygons are areas that the Technical Advisory Panel (TAP) has identified as Priority Deferral Areas.
+			<span style="color:#b85c1a; font-weight:600;">BROWN</span> polygons show small (lighter) to large (darker) old growth stands. 
+			The <span style="color:yellow; font-weight:600;">YELLOW</span> previously logged layer shows polygons from the Consolidated Cutblocks dataset, and carefully selected VRI data under 100 years of age. 
+			Critical Habitat for federally listed species at risk is identified in <span style="color:#1a6ea8; font-weight:600;">BLUE</span>.
+			For more information click on your polygon of interest and toggle layers on and off using the legend. 
+		</p>
+
+    </div>
+
+  <button id="welcome-start" class="welcome-btn">Enter Map</button>
+</div>
+
+
+  </div>
+</div>
+
+<!-- ── Layer Legend ── -->
+<div id="legend">
+	<h4>Map Layers</h4>
+
+	<div class="legend-row" data-layers="future_blocks-fill,future_blocks-outline,future_blocks-hover">
+		<span class="legend-swatch" style="background:red;"></span>
+		<span class="legend-label">Proposed Logging</span>
+		<label class="toggle">
+			<input type="checkbox" >
+			<span class="slider"></span>
+		</label>
+	</div>
+
+		<!-- <div class="legend-row" data-layers="Proposed Cutblocks in TAP Deferral Areas">
+		<span class="legend-swatch" style="background:#eb0e96;"></span>
+		<span class="legend-label">Proposed Cutblocks in TAP Deferral Areas</span>
+		<label class="toggle">
+			<input type="checkbox" >
+			<span class="slider"></span>
+		</label>
+	</div> -->
+
+	<div class="legend-row" data-layers="OGMA-fill,OGMA-outline,OGMA-hover">
+		<span class="legend-swatch" style="background:grey;"></span>
+		<span class="legend-label">Old Growth Management Areas</span>
+		<label class="toggle">
+			<input type="checkbox" >
+			<span class="slider"></span>
+		</label>
+	</div>
+
+	<div class="legend-row" data-layers="TAP_Deferral-fill,TAP_Deferral-outline,TAP_Deferral-hover">
+		<span class="legend-swatch" style="background:white;"></span>
+		<span class="legend-label">TAP Deferral Areas</span>
+		<label class="toggle">
+			<input type="checkbox" >
+			<span class="slider"></span>
+		</label>
+	</div>
+
+	<div class="legend-row" data-layers="big_trees-fill, big_trees-hover">
+		<span class="legend-swatch" style="background:#b85c1a;"></span>
+		<span class="legend-label">TAP Selected Old Growth (Dark=L, Light=S)</span>
+		<label class="toggle">
+			<input type="checkbox" >
+			<span class="slider"></span>
+		</label>
+	</div>
+
+	<div class="legend-row" data-layers="Critical_Habitat-fill">
+		<span class="legend-swatch" style="background:#1a6ea8;"></span>
+		<span class="legend-label">Critical Habitat</span>
+		<label class="toggle">
+			<input type="checkbox" unchecked>
+			<span class="slider"></span>
+		</label>
+	</div>
+
+	<div class="legend-row" data-layers="CC-fill,CC-outline,CC-hover, VRI-fill, VRI-outline, VRI-hover">
+		<span class="legend-swatch" style="background:yellow;"></span>
+		<span class="legend-label">Young Forests</span>
+		<label class="toggle">
+			<input type="checkbox" >
+			<span class="slider"></span>
+		</label>
+	</div>
+
+	<div class="legend-row" data-layers="CCS-fill, VRIS-fill">
+		<span class="legend-swatch" style="background:yellow;"></span>
+		<span class="legend-label">Surrounding Young Forests</span>
+		<label class="toggle">
+			<input type="checkbox" >
+			<span class="slider"></span>
+		</label>
+	</div>	
+</div>
+
+<script>
+	mapboxgl.accessToken = 'pk.eyJ1IjoiemVkc21hcHMiLCJhIjoiY21tNWpscW43MDdoZDJvb21ycWhxNnpiMyJ9.ocRY4_UqGhJ1bgDNbYDKAQ';
+
+	const map = new mapboxgl.Map({
+		container: 'map',
+		zoom: 11.,
+		center: [-126.579666,50.469743],
+		pitch: 60,
+		bearing: 170,
+		style: 'mapbox://styles/mapbox/satellite-v9'
+	});
+	
+	map.setProjection('globe')
+
+	// FIX: Declare at module level so both WFS async blocks can access it for
+	// turf.booleanIntersects() — was previously undefined inside those blocks
+	let Tsitika_Adam_Eve = null;
+
+	// Load boundary data first (before style.load, so WFS requests can use it)
+	(async () => {
+		try {
+			const boundaryResp = await fetch('Mapbox/Tsitika_Adam_Eve.geojson');
+			if (!boundaryResp.ok) throw new Error(`Boundary fetch failed — HTTP ${boundaryResp.status}`);
+			Tsitika_Adam_Eve = await boundaryResp.json();
+			console.log('Tsitika boundary loaded');
+		} catch (err) {
+			console.error('Could not load Tsitika boundary:', err);
+		}
+	})();
+
+	map.on('style.load', () => {
+
+		// Atmosphere
+		map.setFog({});
+
+		// 3D terrain
+		map.addSource('mapbox-dem', {
+			type: 'raster-dem',
+			url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+			tileSize: 512,
+			maxzoom: 14
+		});
+		map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.25 });
+
+		// ── Generate diagonal-stripes pattern from canvas ──
+		const patternCanvas = document.createElement('canvas');
+		patternCanvas.width = 20;
+		patternCanvas.height = 20;
+		const ctx = patternCanvas.getContext('2d');
+
+		// Low-opacity red background
+		ctx.fillStyle = 'rgba(255, 0, 0, 0.12)';
+		ctx.fillRect(0, 0, 20, 20);
+
+		// Diagonal stripes
+		ctx.strokeStyle = 'rgba(255, 60, 60, 0.55)';
+		ctx.lineWidth = 2;
+		[[-5, 5, 5, -5], [0, 20, 20, 0], [15, 25, 25, 15]].forEach(([x1, y1, x2, y2]) => {
+			ctx.beginPath();
+			ctx.moveTo(x1, y1);
+			ctx.lineTo(x2, y2);
+			ctx.stroke();
+		});
+
+		const stripeImage = { width: 20, height: 20, data: new Uint8ClampedArray(
+			ctx.getImageData(0, 0, 20, 20).data
+		)};
+		map.addImage('diagonal-stripes', stripeImage, { pixelRatio: 3 });
+
+
+		//Add horizontal black Stripes for OGMA Layer
+		const patternCanvas2 = document.createElement('canvas');
+		patternCanvas2.width = 20;
+		patternCanvas2.height = 20;
+		const ctx2 = patternCanvas2.getContext('2d');
+
+		// Low-opacity green background
+		ctx2.fillStyle = 'rgba(66, 110, 42, 0.12)';
+		ctx2.fillRect(0, 0, 20, 20);
+
+		// Horizontal stripes
+		ctx2.strokeStyle = 'rgba(0, 0, 0, .51)';
+		ctx2.lineWidth = 2;
+		[[0, 5, 20, 5], [0, 10, 20, 10], [0, 15, 20, 15]].forEach(([x1, y1, x2, y2]) => {
+			ctx2.beginPath();
+			ctx2.moveTo(x1, y1);
+			ctx2.lineTo(x2, y2);
+			ctx2.stroke();
+		});
+
+		const stripeImage2 = { width: 20, height: 20, data: new Uint8ClampedArray(
+			ctx2.getImageData(0, 0, 20, 20).data
+		)};
+		map.addImage('horizontal-stripes', stripeImage2, { pixelRatio: 3 });
+
+		//Create a dot grid
+		const size = 13; // 👈 your base density
+
+		const canvas = document.createElement('canvas');
+		canvas.width = size;
+		canvas.height = size;
+
+		const ctx5 = canvas.getContext('2d');
+
+		// style
+		ctx5.fillStyle = 'rgba(255,255,255,0.7)';
+
+		// dot settings
+		const r = 1.2;
+
+		// top row (centered)
+		ctx5.beginPath();
+		ctx5.arc(size / 2, size / 2, r, 0, Math.PI * 2);
+		ctx5.fill();
+
+		// offset dot (bottom-left-ish to create hex feel)
+		ctx5.beginPath();
+		ctx5.arc(0, 0, r, 0, Math.PI * 2);
+		ctx5.fill();
+
+		// convert to image
+		const imageData = ctx5.getImageData(0, 0, size, size);
+
+		map.addImage('dot-grid2', imageData, { pixelRatio: 2 });
+
+		map.addSource('Tsitika', {
+			type:'geojson',
+			data:'Mapbox/Tsitika_Adam_Eve.geojson'
+		});
+
+		map.addLayer({
+			id: 'Tsitika-fill',
+			type: 'fill',
+			source: 'Tsitika',
+			layout: {},
+			paint: { 'fill-color': '#0080ff', 'fill-opacity': 0.0 }
+		});
+
+		map.addLayer({
+			id: 'outline',
+			type: 'line',
+			source: 'Tsitika',
+			layout: {},
+			paint: { 'line-color': 'white', 'line-width': 1.5 }
+		});
+		
+		// ── Critical Habitat ──
+		map.addSource('Critical_Habitat', {
+			type: 'geojson',
+			data: 'Mapbox/Critical_Habitat.geojson'
+		});
+
+		map.addLayer({
+			id: 'Critical_Habitat-fill',
+			type: 'fill',
+			source: 'Critical_Habitat',
+			paint: { 'fill-color': '#1a6ea8', 'fill-opacity': 0.5 },
+			layout: { 'visibility': 'none' }
+		});
+
+		map.addSource('TAP_Areas_Logged_Since_2021', {
+			type: 'geojson',
+			data: 'Mapbox/Logged_TAP_Since_2021.geojson'
+		});
+
+		// ── VRI <100 Years & Consolidated Cutblocks ──
+		map.addSource('CC', {
+			type: 'geojson',
+			data: 'Mapbox/CC.geojson',
+			generateId: true
+		});
+
+		map.addLayer({
+			id: 'CC-fill',
+			type: 'fill',
+			source: 'CC',
+			paint: { 
+				'fill-color': 'yellow', 
+				'fill-opacity': 0.35 },
+			layout: { 'visibility': 'none' }
+		});
+
+		map.addLayer({
+			id: 'CC-outline',
+			type: 'line',
+			source: 'CC',
+			paint: { 
+				'line-color': 'yellow', 
+				'line-width': 1.0, 
+				'line-opacity': 1.0 },
+			layout: { 'visibility': 'none' }
+		});
+
+		map.addLayer({
+			id: 'CC-hover',
+			type: 'fill',
+			source: 'CC',
+			paint: {
+				'fill-color': 'yellow',
+				'fill-opacity': [
+					'case', ['boolean', ['feature-state', 'hover'], false], 0.15, 0
+				]
+			}
+		});
+
+		let hoveredId4 = null;
+
+		map.on('mousemove', 'CC-fill', (e) => {
+			map.getCanvas().style.cursor = 'pointer';
+			if (e.features.length > 0) {
+				if (hoveredId4 !== null) {
+					map.setFeatureState({ source: 'CC', id: hoveredId4 }, { hover: false });
+				}
+				hoveredId4 = e.features[0].id;
+				map.setFeatureState({ source: 'CC', id: hoveredId4 }, { hover: true });
+			}
+		});
+
+		map.on('mouseleave', 'CC-fill', () => {
+			map.getCanvas().style.cursor = '';
+			if (hoveredId4 !== null) {
+				map.setFeatureState({ source: 'CC', id: hoveredId4 }, { hover: false });
+			}
+			hoveredId4 = null;
+		});
+
+		const popup3 = new mapboxgl.Popup({ closeButton: true, maxWidth: '450px' });
+
+		map.on('click', 'CC-fill', (e) => {
+			const props = e.features[0].properties;
+			const row = (label, key) => {
+				const val = props[key];
+				if (val == null || val === '' || val === 'null') return '';
+				return `<tr>
+							<td class="popup-label" style="padding:3px 8px 3px 0">${label}</td>
+							<td class="popup-value" style="padding:3px 0">${val}</td>
+						</tr>`;
+			};
+			const html = `
+				<div class="popup-header"><span class="popup-header-title">Previously Harvested Forests</span></div>
+				<div class="popup-body">
+					<table style="border-collapse:collapse;width:100%;font-size:11px;font-family:var(--font-mono)">
+						${row('ESTIMATED AGE', 'Estimated_Age')}
+						${row('BEC ZONE', 'BEC_ZONE_C')}
+						${row('BEC SUBZONE', 'BEC_SUBZON')}
+						${row('BEC VARIANT', 'BEC_VARIAN')}
+						${row('DATE HARVESTED', 'HARVEST_START_YEAR_CALENDAR')}
+						${row('AREA (HA)', 'AREA_HA')}
+					</table>
+				</div>`;
+			popup3.setLngLat(e.lngLat).setHTML(html).addTo(map);
+		});
+
+        // ── VRI <100 Years & Consolidated Cutblocks ──
+		map.addSource('VRI', {
+			type: 'geojson',
+			data: 'Mapbox/VRI.geojson',
+			generateId: true
+		});
+
+		map.addLayer({
+			id: 'VRI-fill',
+			type: 'fill',
+        	source: 'VRI',
+			paint: {'fill-color':[
+					'match',
+					['get', 'PROJ_AGE_CLASS_CD_1'],
+					'1', 'yellow',
+					'2', 'yellow',
+					'3', 'yellow',
+					'4', 'yellow',
+                	'5', 'yellow',
+						'transparent'
+				],
+					'fill-opacity': 0.35,
+				},
+				layout: { 'visibility': 'none' }	
+			});
+
+		map.addLayer({
+			id: 'VRI-outline',
+			type: 'line',
+			source: 'VRI',
+			paint: { 
+				'line-color': [
+					'match',
+					['get', 'PROJ_AGE_CLASS_CD_1'],
+					'1', 'yellow',
+					'2', 'yellow',
+					'3', 'yellow',
+					'4', 'yellow',
+                	'5', 'yellow',
+						'transparent'
+				], 
+				'line-width': 1.0, 
+				'line-opacity': 1.0 },
+			layout: { 'visibility': 'none' }
+		});
+
+		map.addLayer({
+			id: 'VRI-hover',
+			type: 'fill',
+			source: 'VRI',
+			paint: {
+				'fill-color': [
+					'match',
+					['get', 'PROJ_AGE_CLASS_CD_1'],
+					'1', 'yellow',
+					'2', 'yellow',
+					'3', 'yellow',
+					'4', 'yellow',
+                	'5', 'yellow',
+						'transparent'
+				],
+				'fill-opacity': [
+					'case', ['boolean', ['feature-state', 'hover'], false], 0.15, 0
+				]
+			}
+		});
+
+		let hoveredId5 = null;
+
+		map.on('mousemove', 'VRI-fill', (e) => {
+			map.getCanvas().style.cursor = 'pointer';
+			if (e.features.length > 0) {
+				if (hoveredId5 !== null) {
+					map.setFeatureState({ source: 'VRI', id: hoveredId5 }, { hover: false });
+				}
+				hoveredId5 = e.features[0].id;
+				map.setFeatureState({ source: 'VRI', id: hoveredId5 }, { hover: true });
+			}
+		});
+
+		map.on('mouseleave', 'VRI-fill', () => {
+			map.getCanvas().style.cursor = '';
+			if (hoveredId5 !== null) {
+				map.setFeatureState({ source: 'VRI', id: hoveredId5 }, { hover: false });
+			}
+			hoveredId5 = null;
+		});
+
+		const popup4 = new mapboxgl.Popup({ closeButton: true, maxWidth: '450px' });
+
+		map.on('click', 'VRI-fill', (e) => {
+			const props = e.features[0].properties;
+			const row = (label, key) => {
+				const val = props[key];
+				if (val == null || val === '' || val === 'null') return '';
+				return `<tr>
+							<td class="popup-label" style="padding:3px 8px 3px 0">${label}</td>
+							<td class="popup-value" style="padding:3px 0">${val}</td>
+						</tr>`;
+			};
+			const html = `
+				<div class="popup-header"><span class="popup-header-title">Previously Harvested Forests</span></div>
+				<div class="popup-body">
+					<table style="border-collapse:collapse;width:100%;font-size:11px;font-family:var(--font-mono)">
+						${row('ESTIMATED AGE', 'PROJ_AGE_1')}
+						${row('BEC ZONE', 'VRI_BEC_Label')}
+						${row('DATE HARVESTED', 'HARVEST_DATE')}
+						${row('AREA (HA)', 'AREA_HA')}
+					</table>
+				</div>`;
+			popup4.setLngLat(e.lngLat).setHTML(html).addTo(map);
+		});
+
+		// ── TAP Deferral Areas ──
+		map.addSource('TAP_Deferral', {
+			type: 'geojson',
+			data: 'Mapbox/TAP_PD.geojson',
+			generateId: true
+		});
+
+		map.addLayer({
+			id: 'TAP_Deferral-fill',
+			type: 'fill',
+			source: 'TAP_Deferral',
+			paint: { 
+				'fill-pattern': 'dot-grid2', 
+			},
+				layout: { 'visibility': 'none' }
+		});
+
+		map.addLayer({
+			id: 'TAP_Deferral-outline',
+			type: 'line',
+			source: 'TAP_Deferral',
+			paint: { 
+				'line-color': '#ffffff', //was a8c5a0
+				'line-width': .7, 
+				'line-opacity': 0.7 },
+				layout: { 'visibility': 'none' }	
+		});
+
+		map.addLayer({
+			id: 'TAP_Deferral-hover',
+			type: 'fill',
+			source: 'TAP_Deferral',
+			paint: {
+				'fill-color': '#ffffff',
+				'fill-opacity': [
+					'case', ['boolean', ['feature-state', 'hover'], false], 0.15, 0
+				]
+			}
+		});
+
+		let hoveredId2 = null;
+
+		map.on('mousemove', 'TAP_Deferral-fill', (e) => {
+			map.getCanvas().style.cursor = 'pointer';
+			if (e.features.length > 0) {
+				if (hoveredId2 !== null) {
+					map.setFeatureState({ source: 'TAP_Deferral', id: hoveredId2 }, { hover: false });
+				}
+				hoveredId2 = e.features[0].id;
+				map.setFeatureState({ source: 'TAP_Deferral', id: hoveredId2 }, { hover: true });
+			}
+		});
+
+		map.on('mouseleave', 'TAP_Deferral-fill', () => {
+			map.getCanvas().style.cursor = '';
+			if (hoveredId2 !== null) {
+				map.setFeatureState({ source: 'TAP_Deferral', id: hoveredId2 }, { hover: false });
+			}
+			hoveredId2 = null;
+		});
+
+		const popup1 = new mapboxgl.Popup({ closeButton: true, maxWidth: '450px' });
+
+		map.on('click', 'TAP_Deferral-fill', (e) => {
+			const props = e.features[0].properties;
+			const row = (label, key) => {
+				const val = props[key];
+				if (val == null || val === '' || val === 'null') return '';
+				return `<tr>
+							<td class="popup-label" style="padding:3px 8px 3px 0">${label}</td>
+							<td class="popup-value" style="padding:3px 0">${val}</td>
+						</tr>`;
+			};
+			const html = `
+				<div class="popup-header"><span class="popup-header-title">TAP Deferral Area</span></div>
+				<div class="popup-body">
+					<table style="border-collapse:collapse;width:100%;font-size:11px;font-family:var(--font-mono)">
+						${row('FOREST DESCRIPTION', 'ANCIENT_FOREST_DESCR')}
+						${row('BEC CLASSIFICATION', 'BGC_LABEL')}
+						${row('AREA (HA)', 'Area (ha)')}
+					</table>
+				</div>`;
+			popup1.setLngLat(e.lngLat).setHTML(html).addTo(map);
+		});
+
+		// ── Forest Stand Size ──
+		
+		map.addSource('big_trees', {
+			type: 'geojson',
+			data: 'Mapbox/Big_Trees.geojson',
+			generateId: true
+		});
+
+		map.addLayer({
+			id: 'big_trees-fill',
+			type: 'fill',
+			source: 'big_trees',
+			paint: {
+				'fill-color': [
+					'match',
+					['get', 'TAP_CLASSIFICATION_LABEL'],
+					'Very Large', '#7a2e0a',
+					'Large', '#b85c1a',
+					'Medium', '#d4813a',
+					'Small', '#f0c080',
+					'Very Small', '#fde8c8',
+				 	'transparent'
+				],
+				'fill-opacity': .5 },
+			layout: {'visibility': 'none'},
+		});
+
+		map.addLayer({
+			id: 'big_trees-hover',
+			type: 'fill',
+			source: 'big_trees',
+			paint: {
+				'fill-color': [
+					'match',
+					['get', 'TAP_CLASSIFICATION_LABEL'],
+					'Very Large', '#7a2e0a',
+					'Large', '#b85c1a',
+					'Medium', '#d4813a',
+					'Small', '#f0c080',
+					'Very Small', '#fde8c8',
+				 	'transparent'
+				],
+				'fill-opacity': [
+					'case', ['boolean', ['feature-state', 'hover'], false], 0.15, 0
+				]
+			}
+		});
+
+		let hoveredbigId = null;
+
+		map.on('mousemove', 'big_trees-fill', (e) => {
+			map.getCanvas().style.cursor = 'pointer';
+			if (e.features.length > 0) {
+				if (hoveredbigId !== null) {
+					map.setFeatureState({ source: 'big_trees', id: hoveredbigId }, { hover: false });
+				}
+				hoveredbigId = e.features[0].id;
+				map.setFeatureState({ source: 'big_trees', id: hoveredbigId }, { hover: true });
+			}
+		});
+
+		map.on('mouseleave', 'big_trees-fill', () => {
+			map.getCanvas().style.cursor = '';
+			if (hoveredbigId !== null) {
+				map.setFeatureState({ source: 'big_trees', id: hoveredbigId }, { hover: false });
+			}
+			hoveredbigId = null;
+		});
+
+		const popupbig = new mapboxgl.Popup({ closeButton: true, maxWidth: '450px' });
+
+		map.on('click', 'big_trees-fill', (e) => {
+			const props = e.features[0].properties;
+			const row = (label, key) => {
+				const val = props[key];
+				if (val == null || val === '' || val === 'null') return '';
+				return `<tr>
+							<td class="popup-label" style="padding:3px 8px 3px 0">${label}</td>
+							<td class="popup-value" style="padding:3px 0">${val}</td>
+						</tr>`;
+			};
+			const html = `
+				<div class="popup-header"><span class="popup-header-title">Stand Information</span></div>
+				<div class="popup-body">
+					<table style="border-collapse:collapse;width:100%;font-size:11px;font-family:var(--font-mono)">
+						${row('STAND SIZE', 'TAP_CLASSIFICATION_LABEL')}
+						${row('BEC CLASSIFICATION', 'BGC_LABEL')}
+						${row('AREA (HA)', 'AREA_HA')}
+					</table>
+				</div>`;
+			popupbig.setLngLat(e.lngLat).setHTML(html).addTo(map);
+		});
+
+		// //add proposed cutblocks that overlap with TAP priority deferral areas
+		// map.addSource('Proposed Cutblocks in TAP Deferral Areas', {
+		// 	type: 'geojson',
+		// 	data: 'Mapbox/FC_TAP_PRI.geojson'
+		// });
+		
+		// map.addLayer({
+		// 	id: 'Proposed Cutblocks in TAP Deferral Areas',
+		// 	type: 'fill',
+		// 	source: 'Proposed Cutblocks in TAP Deferral Areas',
+		// 	paint: {
+		// 		'fill-color': '#eb0e96',
+		// 		'fill-opacity': 0.35
+		// 	}
+		// });
+		
+		// ── Add Future Cutblocks ──
+			const WFS_URL5 =
+				'https://openmaps.gov.bc.ca/geo/ows?' +
+				'SERVICE=WFS' +
+				'&VERSION=2.0.0' +
+				'&REQUEST=GetFeature' +
+				'&TYPENAMES=pub:WHSE_FOREST_TENURE.FOM_CUTBLOCK_SP' +
+				'&OUTPUTFORMAT=application/json' +
+				'&SRSNAME=EPSG:4326' +
+				'&BBOX=-127.369995,49.774170,-125.211182,50.809406,EPSG:4326';
+
+			// Format: &BBOX=minLng,minLat,maxLng,maxLat,EPSG:4326
+			(async () => {
+				let geojson5;
+				try {
+				const response = await fetch(WFS_URL5);
+				if (!response.ok) throw new Error(`WFS5 request failed — HTTP ${response.status}`);
+				geojson5 = await response.json();
+				console.log(`proposed cutblocks loaded: ${geojson5.features?.length ?? 0} features`);
+				} catch (err) {
+				console.error('Could not load proposed cutblocks from BC WFS:', err);
+				return;
+				}
+
+		map.addSource('future_blocks', {
+			type: 'geojson',
+			data: geojson5,
+			generateId: true
+		});
+
+		map.addLayer({
+			id: 'future_blocks-fill',
+			type: 'fill',
+			source: 'future_blocks',
+			paint: { 
+				'fill-pattern': 'diagonal-stripes', 
+			 },
+			layout: { 'visibility': 'none' }
+		});
+
+		map.addLayer({
+			id: 'future_blocks-outline',
+			type: 'line',
+			source: 'future_blocks',
+			paint: { 'line-color': 'red', 'line-width': .7, 'line-opacity': 0.9 },
+			layout: { 'visibility': 'none' }
+		});
+
+		map.addLayer({
+			id: 'future_blocks-hover',
+			type: 'fill',
+			source: 'future_blocks',
+			paint: {
+				'fill-color': 'red',
+				'fill-opacity': [
+					'case', ['boolean', ['feature-state', 'hover'], false], 0.15, 0
+				]
+			}
+		});
+
+		let hoveredId3 = null;
+
+		map.on('mousemove', 'future_blocks-fill', (e) => {
+			map.getCanvas().style.cursor = 'pointer';
+			if (e.features.length > 0) {
+				if (hoveredId3 !== null) {
+					map.setFeatureState({ source: 'future_blocks', id: hoveredId3 }, { hover: false });
+				}
+				hoveredId3 = e.features[0].id;
+				map.setFeatureState({ source: 'future_blocks', id: hoveredId3 }, { hover: true });
+			}
+		});
+
+		map.on('mouseleave', 'future_blocks-fill', () => {
+			map.getCanvas().style.cursor = '';
+			if (hoveredId3 !== null) {
+				map.setFeatureState({ source: 'future_blocks', id: hoveredId3 }, { hover: false });
+			}
+			hoveredId3 = null;
+		});
+
+		const popup2 = new mapboxgl.Popup({ closeButton: true, maxWidth: '450px' });
+
+		map.on('click', 'future_blocks-fill', (e) => {
+			console.log('Clicked future_blocks-fill', e.features[0]);
+			console.log('Properties:', Object.keys(e.features[0].properties));
+			const props = e.features[0].properties;
+			const row = (label, key) => {
+				const val = props[key];
+				if (val == null || val === '' || val === 'null') return '';
+				return `<tr>
+							<td class="popup-label" style="padding:3px 8px 3px 0">${label}</td>
+							<td class="popup-value" style="padding:3px 0">${val}</td>
+						</tr>`;
+			};
+			const html = `
+				<div class="popup-header"><span class="popup-header-title">Proposed Cutblock Details</span></div>
+				<div class="popup-body">
+					<table style="border-collapse:collapse;width:100%;font-size:11px;font-family:var(--font-mono)">
+						${row('BLOCK ID', 'CUT_BLOCK_ID')}
+						${row('LICENSE ID', 'LICENSE_ID')}
+						${row('STATUS', 'LIFECYCLE_STATUS')}
+						${row('FSP HOLDER', 'FSP_HOLDER_NAME')}
+						${row('PLANNED HARVEST DATE', 'PLANNED_DEVELOPMENT_DATE')}
+						${row('AREA (SQM)', 'FEATURE_AREA_SQM')}
+					</table>
+				</div>`;
+			popup2.setLngLat(e.lngLat).setHTML(html).addTo(map);
+		});
+
+	 })();
+
+		//-----------------------------------------------------------------------------
+		//OGMA  — WFS REQUEST URL
+		// -----------------------------------------------------------------------------
+			const WFS_URL =
+				'https://openmaps.gov.bc.ca/geo/ows?' +
+				'SERVICE=WFS' +
+				'&VERSION=2.0.0' +
+				'&REQUEST=GetFeature' +
+				'&TYPENAMES=pub:WHSE_LAND_USE_PLANNING.RMP_OGMA_LEGAL_CURRENT_SVW' +
+				'&OUTPUTFORMAT=application/json' +
+				'&SRSNAME=EPSG:4326' +
+				'&BBOX=-127.063065,50.268277,-126.060562,50.617232,EPSG:4326';
+
+			// Format: &BBOX=minLng,minLat,maxLng,maxLat,EPSG:4326
+			(async () => {
+				let geojson;
+				try {
+				const response = await fetch(WFS_URL);
+				if (!response.ok) throw new Error(`WFS request failed — HTTP ${response.status}`);
+				geojson = await response.json();
+				console.log(`OGMA loaded: ${geojson.features?.length ?? 0} features`);
+				} catch (err) {
+				console.error('Could not load OGMA features from BC WFS:', err);
+				return;
+				}
+
+				// Filter to only features that intersect the Nahmint polygon
+				const clipped2 = {
+				...geojson,
+				features: geojson.features.filter(f =>
+					turf.booleanIntersects(f, Tsitika_Adam_Eve)
+					)
+				};
+				console.log(`OGMA within Tsitika: ${clipped2.features.length}`);
+
+				map.addSource('OGMA', {
+				type: 'geojson',
+				data: clipped2,        // <-- only features inside the boundary
+				generateId: true
+				});
+
+				// Fill layer — semi-transparent polygon interior
+				map.addLayer({
+					id: 'OGMA-fill',
+					type: 'fill',
+					source: 'OGMA',
+					paint: {
+						'fill-pattern': 'horizontal-stripes',
+					},
+					layout: { 'visibility': 'none' }
+				});
+
+				// Outline layer — polygon border
+				map.addLayer({
+					id: 'OGMA-outline',
+					type: 'line',
+					source: 'OGMA',
+					paint: {
+						'line-color': 'black',
+						'line-width': .7,
+						'line-opacity': .75
+					},
+					layout: { 'visibility': 'none' }	
+				});
+
+			map.addLayer({
+					id: 'OGMA-hover',
+					type: 'fill',
+					source: 'OGMA',
+					paint: {
+						'fill-color': 'black',
+						'fill-opacity': [
+							'case',
+							['boolean', ['feature-state', 'hover'], false],
+							0.15,   // opacity when hovered
+							0       // opacity when not hovered
+						]
+					}
+				});
+
+				// Track which feature is currently hovered
+				let hoveredFomId = null;
+
+				map.on('mousemove', 'OGMA-fill', (e) => {
+					map.getCanvas().style.cursor = 'pointer';
+					if (e.features.length > 0) {
+						if (hoveredFomId !== null) {
+							map.setFeatureState({ source: 'OGMA', id: hoveredFomId }, { hover: false });
+						}
+						hoveredFomId = e.features[0].id;
+						map.setFeatureState({ source: 'OGMA', id: hoveredFomId }, { hover: true });
+					}
+				});
+
+				map.on('mouseleave', 'OGMA-fill', () => {
+					map.getCanvas().style.cursor = '';
+					if (hoveredFomId !== null) {
+						map.setFeatureState({ source: 'OGMA', id: hoveredFomId }, { hover: false });
+					}
+					hoveredFomId = null;
+				});
+
+				// Click popup — reuse a single instance, move it on each click
+				// All popup styles come from map-ui.css
+				const popup = new mapboxgl.Popup({ closeButton: true, maxWidth: '450px' });
+
+				map.on('click', 'OGMA-fill', (e) => {
+					const props = e.features[0].properties;
+
+					// Returns a table row or empty string if the value is missing
+					const row = (label, key) => {
+						const val = props[key];
+						if (val == null || val === '' || val === 'null') return '';
+						return `<tr>
+									<td class="popup-label" style="padding:3px 8px 3px 0">${label}</td>
+									<td class="popup-value" style="padding:3px 0">${val}</td>
+								</tr>`;
+					};
+
+					const html = `
+						<div class="popup-header">
+							<span class="popup-header-title">OGMA Details</span>
+						</div>
+						<div class="popup-body">
+							<table style="border-collapse:collapse;width:100%;font-size:11px;font-family:var(--font-mono)">
+								${row('ID',         				 'LEGAL_OGMA_PROVID')}
+							</table>
+						</div>
+					`;
+
+					popup.setLngLat(e.lngLat).setHTML(html).addTo(map);
+				});
+
+			})(); // end OGMA cutblocks async block 
+
+            // //Surrounding VRI and CC blocks
+			// 	map.addSource('CC', {
+			// 	type: 'geojson',
+			// 	data: 'Mapbox/Near_CC.geojson',        // <-- only features inside the boundary
+			// 	generateId: true
+			// 	});
+			// 	// Fill layer — semi-transparent polygon interior
+				// map.addLayer({
+				// 	id: 'CC-fill',
+				// 	type: 'fill',
+				// 	source: 'CC',
+				// 	paint: {
+				// 		'fill-color': 'yellow',
+				// 		'fill-opacity': 0.35,
+				// 	},
+				// 	layout: { 'visibility': 'none' }
+				// });
+
+				// map.addSource('VRI', {
+				// 	type: 'geojson',
+				// 	data: 'Mapbox/Surrounding_VRI.geojson',  // <-- only features inside the boundary
+				// 	generateId: true
+				// });
+
+				// // Fill layer — semi-transparent polygon interior
+				// map.addLayer({
+				// 	id: 'VRI-fill',
+				// 	type: 'fill',
+				// 	source: 'VRI',
+				// 	paint: {'fill-color':[
+				// 		'match',
+				// 		['get', 'PROJ_AGE_CLASS_CD_1'],
+				// 		'1', 'yellow',
+				// 		'2', 'yellow',
+				// 		'3', 'yellow',
+				// 		'4', 'yellow',
+				// 		'5', 'yellow',
+				// 		'transparent'
+				// 	],
+				// 		'fill-opacity': 0.35,
+				// 	},
+				// 	layout: { 'visibility': 'none' }	
+				// });
+			const WFS_URL6 =
+				'https://openmaps.gov.bc.ca/geo/ows?' +
+				'SERVICE=WFS' +
+				'&VERSION=2.0.0' +
+				'&REQUEST=GetFeature' +
+				'&TYPENAMES=pub:WHSE_FOREST_VEGETATION.VEG_CONSOLIDATED_CUT_BLOCKS_SP' +
+				'&OUTPUTFORMAT=application/json' +
+				'&SRSNAME=EPSG:4326' +
+				'&BBOX=--14161641.1045,6450367.9429,-14002346.3375,6571749.9438,EPSG:3857';
+
+			// Format: &BBOX=minLng,minLat,maxLng,maxLat,EPSG:4326
+			(async () => {
+				let geojson6;
+				try {
+				const response = await fetch(WFS_URL6);
+				if (!response.ok) throw new Error(`WFS6 request failed — HTTP ${response.status}`);
+				geojson6 = await response.json();
+				console.log(`proposed cutblocks loaded: ${geojson6.features?.length ?? 0} features`);
+				} catch (err) {
+				console.error('Could not load proposed cutblocks from BC WFS:', err);
+				return;
+				}
+
+				map.addSource('CCS', {
+					type: 'geojson',
+					data: geojson6,
+					generateId: true
+				});
+
+				map.addLayer({
+					id: 'CCS-fill',
+					type: 'fill',
+					source: 'CCS',
+					paint: { 
+						'fill-color': 'yellow', 
+					 },
+					layout: { 'visibility': 'none' }
+				});
+			})();
+
+			// const WFS_URL7 =
+			// 	'https://openmaps.gov.bc.ca/geo/ows?' +
+			// 	'SERVICE=WFS' +
+			// 	'&VERSION=2.0.0' +
+			// 	'&REQUEST=GetFeature' +
+			// 	'&TYPENAMES=pub:WHSE_FOREST_VEGETATION.VEG_COMP_LYR_R1_POLY' +
+			// 	'&OUTPUTFORMAT=application/json' +
+			// 	'&SRSNAME=EPSG:4326' +
+			// 	'&BBOX=-14161641.1045,6455565.6609,-14003875.0781,6571749.9438,EPSG:3857';// only needed cols
+
+			// // Format: &BBOX=minLng,minLat,maxLng,maxLat,EPSG:4326
+			// (async () => {
+			// 	let geojson7;
+			// 	try {
+			// 	const response = await fetch(WFS_URL7);
+			// 	if (!response.ok) throw new Error(`WFS7 request failed — HTTP ${response.status}`);
+			// 	geojson7 = await response.json();
+			// 	console.log(`proposed cutblocks loaded: ${geojson7.features?.length ?? 0} features`);
+			// 	} catch (err) {
+			// 	console.error('Could not load proposed cutblocks from BC WFS:', err);
+			// 	return;
+			// 	}
+				
+			map.addSource('VRIS', {
+					type: 'geojson',
+					data: 'Mapbox/VRI_Dissolved.geojson',
+					generateId: true
+				});
+
+				map.addLayer({
+					id: 'VRIS-fill',
+					type: 'fill',
+					source: 'VRIS',
+					paint:	{
+					 'fill-color': 'yellow'
+					},
+					 'fill-opacity': 0.35,
+					layout: { 'visibility': 'none' }
+				});
+			// })();
+			
+	}); // end map.on('load')
+
+		// ── Wire up legend toggles ──
+		// Runs after all layers are added so setLayoutProperty will find each layer
+		document.querySelectorAll('#legend .legend-row').forEach(row => {
+			const checkbox = row.querySelector('input[type="checkbox"]');
+			const layerIds = row.dataset.layers.split(',');
+
+			checkbox.addEventListener('change', () => {
+				const visibility = checkbox.checked ? 'visible' : 'none';
+				layerIds.forEach(id => {
+					try {
+     					map.setLayoutProperty(id.trim(), 'visibility', visibility);
+    				} catch (e) {
+        			// layer not yet loaded
+    				}
+				});
+				// Dim the swatch and label when the layer is off
+				row.classList.toggle('is-off', !checkbox.checked);
+			});
+		});
+
+
+		// =============================================================================
+		// WELCOME CARD — MAP INSTRUCTIONS
+		// -----------------------------------------------------------------------------
+		// Call renderWelcomeCard on page load
+		if (localStorage.getItem('fom-welcome-dismissed') === 'true') {
+			// User opted out — don't show the card
+		} else {
+			renderWelcomeCard();
+		}
+
+		function renderWelcomeCard() {
+
+			const card = document.createElement('div');
+			card.id = 'map-welcome-card';
+			// map-card: dark panel base (map-ui.css)
+			// ui-fade-in: entry animation (map-ui.css)
+			card.className = 'map-card ui-fade-in';
+
+			card.innerHTML = `
+				<!-- Header — click anywhere here to minimize/expand -->
+				<div class="map-card-header" id="wc-header" style="cursor:pointer;" title="Click to expand/minimise">
+					<span class="map-card-title">Map Controls</span>
+					<button class="map-close-btn" id="wc-minimize-btn" aria-label="Minimise instructions"
+						style="font-size:16px;line-height:1;">⌃</button>
+				</div>
+
+				<!-- Body — hidden when is-minimized class applied (CSS above) -->
+				<div class="map-card-body">
+					<p style="font-size:12px;color:var(--ui-text-muted);line-height:1.5;margin-bottom:14px;">
+						Use the controls below to explore the forest data.
+						Click any highlighted block for detailed information.
+					</p>
+
+					<div class="map-section-label">Mouse</div>
+
+					<div class="instruction-row">
+						<div class="keys"><span class="key">Click + Drag</span></div>
+						<span>Pan / move the map</span>
+					</div>
+					<div class="instruction-row">
+						<div class="keys"><span class="key">Scroll</span></div>
+						<span>Zoom in and out</span>
+					</div>
+					<div class="instruction-row">
+						<div class="keys"><span class="key">Dbl Click</span></div>
+						<span>Zoom in to location</span>
+					</div>
+					<div class="instruction-row">
+						<div class="keys">
+							<span class="key">Ctrl</span>
+							<span class="key-sep">+</span>
+							<span class="key">Drag</span>
+						</div>
+						<span>Tilt / change pitch</span>
+					</div>
+					<div class="instruction-row">
+						<div class="keys"><span class="key">Click</span></div>
+						<span>See feature data</span>
+					</div>
+				</div><!-- end .map-card-body -->
+			`;
+
+			document.getElementById('map').appendChild(card);				
+
+			// -------------------------------------------------------------------------
+			// MINIMIZE / EXPAND HANDLER
+			// -------------------------------------------------------------------------
+			let isMinimized = false;
+			const minimizeBtn = card.querySelector('#wc-minimize-btn');
+			const header = card.querySelector('#wc-header');
+
+			function toggleMinimize() {
+				isMinimized = !isMinimized;
+				card.classList.toggle('is-minimized', isMinimized);
+				// ⌃ = expanded, ⌄ = minimized
+				minimizeBtn.textContent = isMinimized ? '⌄' : '⌃';
+				minimizeBtn.setAttribute('aria-label', isMinimized ? 'Expand instructions' : 'Minimise instructions');
+			}
+
+			header.addEventListener('click', toggleMinimize);
+		} // end renderWelcomeCard()
+
+
+		//welcome card button interactions
+		document.addEventListener('DOMContentLoaded',()=>{
+			const overlay = document.getElementById('welcome-overlay');
+			const closeBtn = document.getElementById('welcome-close');
+			const startBtn = document.getElementById('welcome-start');
+			const dontShowCheckbox = document.getElementById('dont-show-again');
+
+			function closeWelcome() {
+			if (dontShowCheckbox?.checked) {
+				sessionStorage.setItem('hideWelcome', 'true');
+			}
+
+			overlay.classList.remove('ui-fade-in');
+			overlay.classList.add('ui-fade-out');
+
+			setTimeout(() => {
+				overlay.style.display = 'none';
+			}, 250);
+			}
+
+			closeBtn.addEventListener('click', closeWelcome);
+			startBtn.addEventListener('click', closeWelcome);
+
+			if (sessionStorage.getItem('hideWelcome') === 'true') {overlay.style.display = 'none'
+			}
+		});
+
+</script>
+</body>
+</html>

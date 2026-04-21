@@ -1,0 +1,486 @@
+/* -----------------------------------------------------------------------------
+   GOOGLE FONTS IMPORT
+   -----------------------------------------------------------------------------
+   IBM Plex Mono  — used for labels, keys, badges, and headings
+   IBM Plex Sans  — used for body text and descriptions
+   ----------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;500&display=swap');
+
+
+/* -----------------------------------------------------------------------------
+   CSS VARIABLES — edit here to restyle everything at once
+   ----------------------------------------------------------------------------- */
+:root {
+  /* Backgrounds */
+  --ui-bg:              #161b24;   /* main panel/card background */
+  --ui-bg-deep:         #0e1117;   /* deeper background e.g. key badges */
+  --ui-bg-accent:       rgba(74, 222, 128, 0.07); /* subtle tint for headers */
+
+  /* Borders */
+  --ui-border:          #2a3140;   /* standard border colour */
+  --ui-border-radius:   8px;       /* card corner radius */
+  --ui-border-radius-sm:4px;       /* smaller radius e.g. badges, buttons */
+
+  /* Text */
+  --ui-text:            #e2e8f0;   /* primary text */
+  --ui-text-muted:      #64748b;   /* secondary / label text */
+
+  /* Accent colours — used for headings, active states, layer swatches */
+  --accent-green:       #4ade80;   /* Previously Harvested Areas */
+  --accent-orange:      #f97316;   /* Proposed Harvest Areas */
+  --accent-blue:        #38bdf8;   /* VRI Old Growth */
+  --accent-purple:      #a78bfa;   /* Old Growth Management Areas */
+  --accent-yellow:      #fbbf24;   /* Priority Deferral Areas (TAP) */
+  --accent-red:         #f87171;   /* spare — available for future layers */
+
+  /* Typography */
+  --font-mono:          'IBM Plex Mono', ui-monospace, monospace;
+  --font-sans:          'IBM Plex Sans', system-ui, sans-serif;
+
+  /* Shadows */
+  --ui-shadow:          0 8px 32px rgba(0, 0, 0, 0.5);
+
+  /* Transitions */
+  --ui-transition:      0.15s ease;
+}
+
+/*Welcome card 
+/* Center overlay container */
+#welcome-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.55);
+  z-index: 20;
+}
+
+/* Card sizing */
+.welcome-card {
+  width: 420px;
+  max-width: 90%;
+}
+
+/* Body text */
+.welcome-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ui-text);
+  margin-bottom: 14px;
+}
+
+/* CTA button */
+.welcome-btn {
+  width: 100%;
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  background: var(--accent-blue);
+  color: #000;
+
+  border: none;
+  border-radius: var(--ui-border-radius-sm);
+  cursor: pointer;
+
+  transition: opacity var(--ui-transition);
+}
+
+.welcome-btn:hover {
+  opacity: 0.85;
+}
+.welcome-footer-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 8px;
+}
+
+.dont-show {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--ui-text-muted);
+  font-family: var(--font-sans);
+  cursor: pointer;
+}
+
+.dont-show input {
+  cursor: pointer;
+}
+
+
+/* -----------------------------------------------------------------------------
+   SHARED CARD / PANEL BASE
+   -----------------------------------------------------------------------------
+   Any UI panel (welcome card, legend, etc.) can use the .map-card class
+   to get consistent background, border, shadow, and font defaults.
+   ----------------------------------------------------------------------------- */
+.map-card {
+  background:    var(--ui-bg);
+  border:        1px solid var(--ui-border);
+  border-radius: var(--ui-border-radius);
+  box-shadow:    var(--ui-shadow);
+  color:         var(--ui-text);
+  font-family:   var(--font-sans);
+  overflow:      hidden;
+}
+
+
+/* -----------------------------------------------------------------------------
+   SHARED CARD HEADER
+   -----------------------------------------------------------------------------
+   Used at the top of cards to show a title and optional action (e.g. close btn).
+   ----------------------------------------------------------------------------- */
+.map-card-header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  padding:         12px 14px;
+  border-bottom:   1px solid var(--ui-border);
+  background:      var(--ui-bg-accent);
+}
+
+.map-card-title {
+  font-family:    var(--font-mono);
+  font-size:      11px;
+  font-weight:    600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color:          var(--accent-blue);
+}
+
+
+/* -----------------------------------------------------------------------------
+   SHARED CARD BODY
+   ----------------------------------------------------------------------------- */
+.map-card-body {
+  padding: 14px;
+}
+
+
+/* -----------------------------------------------------------------------------
+   SHARED CARD FOOTER
+   ----------------------------------------------------------------------------- */
+.map-card-footer {
+  padding:     10px 14px;
+  border-top:  1px solid var(--ui-border);
+}
+
+
+/* -----------------------------------------------------------------------------
+   SECTION LABEL
+   -----------------------------------------------------------------------------
+   Small uppercase label used to group items within a card body.
+   e.g. "Mouse", "Keyboard", "Polygon Layers"
+   ----------------------------------------------------------------------------- */
+.map-section-label {
+  font-family:    var(--font-mono);
+  font-size:      9px;
+  font-weight:    600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color:          var(--ui-text-muted);
+  margin:         12px 0 8px;
+}
+
+.map-section-label:first-child {
+  margin-top: 0;
+}
+
+
+/* -----------------------------------------------------------------------------
+   CLOSE BUTTON
+   -----------------------------------------------------------------------------
+   Used on dismissible cards (welcome card, etc.)
+   ----------------------------------------------------------------------------- */
+.map-close-btn {
+  background:   none;
+  border:       1px solid var(--ui-border);
+  border-radius:var(--ui-border-radius-sm);
+  color:        var(--ui-text-muted);
+  font-size:    14px;
+  line-height:  1;
+  padding:      2px 7px;
+  cursor:       pointer;
+  font-family:  var(--font-mono);
+  transition:   color var(--ui-transition), border-color var(--ui-transition);
+}
+
+.map-close-btn:hover {
+  color:        var(--ui-text);
+  border-color: var(--ui-text-muted);
+}
+
+
+/* -----------------------------------------------------------------------------
+   KEY BADGE
+   -----------------------------------------------------------------------------
+   Styled pill used to show keyboard keys or mouse actions in instructions.
+   e.g. <span class="key">Ctrl</span>
+   ----------------------------------------------------------------------------- */
+.key {
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  background:      var(--ui-bg-deep);
+  border:          1px solid var(--ui-border);
+  border-radius:   var(--ui-border-radius-sm);
+  font-family:     var(--font-mono);
+  font-size:       10px;
+  color:           var(--ui-text);
+  padding:         2px 6px;
+  white-space:     nowrap;
+  flex-shrink:     0;
+  min-width:       28px;
+}
+
+/* Small separator between keys e.g. "or", "+" */
+.key-sep {
+  font-size:   9px;
+  color:       var(--ui-text-muted);
+  font-family: var(--font-mono);
+}
+
+
+/* -----------------------------------------------------------------------------
+   INSTRUCTION ROW
+   -----------------------------------------------------------------------------
+   A single row in the welcome card: [key badge(s)] [description text]
+   ----------------------------------------------------------------------------- */
+.instruction-row {
+  display:     flex;
+  align-items: center;
+  gap:         10px;
+  margin-bottom: 8px;
+  font-size:   12px;
+  font-family: var(--font-sans);
+  color:       var(--ui-text);
+  line-height: 1.3;
+}
+
+.instruction-row:last-child {
+  margin-bottom: 0;
+}
+
+/* Wrapper that holds one or more .key badges for a single action */
+.keys {
+  display:    flex;
+  align-items:center;
+  gap:        4px;
+  flex-shrink:0;
+  min-width:  110px; /* keeps description text left-aligned across rows */
+}
+
+
+/* -----------------------------------------------------------------------------
+   LAYER TOGGLE ROW
+   -----------------------------------------------------------------------------
+   Used in the legend for each toggleable layer.
+   Layout: [colour swatch] [layer name] [toggle switch]
+   ----------------------------------------------------------------------------- */
+.layer-row {
+  display:       flex;
+  align-items:   center;
+  gap:           10px;
+  padding:       7px 0;
+  border-bottom: 1px solid var(--ui-border);
+  cursor:        pointer;
+  transition:    opacity var(--ui-transition);
+}
+
+.layer-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Dim the whole row when layer is toggled off */
+.layer-row.is-off {
+  opacity: 0.45;
+}
+
+/* Colour swatch — small rectangle showing the layer's fill colour */
+.layer-swatch {
+  width:        20px;
+  height:       20px;
+  border-radius:3px;
+  flex-shrink:  0;
+  border:       1px solid rgba(255, 255, 255, 0.12);
+  /* background-color is set inline per layer */
+}
+
+/* Layer name label */
+.layer-name {
+  font-family: var(--font-sans);
+  font-size:   12px;
+  color:       var(--ui-text);
+  flex:        1;           /* takes up remaining space, pushes toggle to the right */
+  line-height: 1.3;
+}
+
+/* Toggle switch track */
+.toggle-switch {
+  position:      relative;
+  width:         32px;
+  height:        18px;
+  flex-shrink:   0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width:   0;
+  height:  0;
+  position:absolute;
+}
+
+/* Track (the pill shape behind the knob) */
+.toggle-track {
+  position:      absolute;
+  inset:         0;
+  background:    var(--ui-border);
+  border-radius: 18px;
+  transition:    background var(--ui-transition);
+  cursor:        pointer;
+}
+
+/* Knob (the circle that slides) */
+.toggle-track::after {
+  content:       '';
+  position:      absolute;
+  top:           3px;
+  left:          3px;
+  width:         12px;
+  height:        12px;
+  border-radius: 50%;
+  background:    var(--ui-text-muted);
+  transition:    transform var(--ui-transition), background var(--ui-transition);
+}
+
+/* Checked state — track turns accent green, knob slides right */
+.toggle-switch input:checked + .toggle-track {
+  background: var(--accent-blue);
+}
+
+.toggle-switch input:checked + .toggle-track::after {
+  transform:  translateX(14px);
+  background: #fff;
+}
+
+
+/* -----------------------------------------------------------------------------
+   POPUP STYLES
+   -----------------------------------------------------------------------------
+   Overrides Mapbox's default popup appearance to match the dark UI theme.
+   The .mapboxgl-popup-content selector targets Mapbox's injected wrapper.
+   ----------------------------------------------------------------------------- */
+.mapboxgl-popup-content {
+  background:    var(--ui-bg) !important;
+  border:        1px solid var(--ui-border) !important;
+  border-radius: var(--ui-border-radius) !important;
+  padding:       0 !important;
+  font-family:   var(--font-mono) !important;
+  box-shadow:    var(--ui-shadow) !important;
+  max-width:     280px;
+}
+
+/* Hide the default Mapbox popup arrow/tip */
+.mapboxgl-popup-tip {
+  display: none !important;
+}
+
+.mapboxgl-popup-close-button {
+  color:   var(--ui-text-muted) !important;
+  font-size: 16px !important;
+  padding: 8px 10px !important;
+  transition: color var(--ui-transition);
+}
+
+.mapboxgl-popup-close-button:hover {
+  color: var(--ui-text) !important;
+  background: none !important;
+}
+
+/* Popup header bar */
+.popup-header {
+  background:    var(--ui-bg-accent);
+  border-bottom: 1px solid var(--ui-border);
+  padding:       10px 14px;
+}
+
+.popup-header-title {
+  font-size:      10px;
+  font-weight:    600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color:          var(--accent-blue);
+}
+
+/* Popup body */
+.popup-body {
+  padding: 12px 14px;
+}
+
+/* Individual attribute row inside the popup */
+.popup-row {
+  display:         flex;
+  justify-content: space-between;
+  align-items:     flex-start;
+  gap:             12px;
+  margin-bottom:   7px;
+  font-size:       11px;
+  line-height:     1.4;
+}
+
+.popup-row:last-child {
+  margin-bottom: 0;
+}
+
+.popup-label {
+  color:      var(--ui-text-muted);
+  flex-shrink:0;
+}
+
+.popup-value {
+  color:      var(--ui-text);
+  text-align: right;
+  word-break: break-word;
+}
+
+/* Coloured status badge used inside popups */
+.status-badge {
+  display:       inline-block;
+  padding:       2px 7px;
+  border-radius: 3px;
+  font-size:     10px;
+  font-weight:   600;
+  letter-spacing:0.05em;
+  /* background, color, and border are set inline to match the layer colour */
+}
+
+
+/* -----------------------------------------------------------------------------
+   FADE ANIMATIONS
+   -----------------------------------------------------------------------------
+   Reusable entry/exit animations used by cards and panels.
+   Apply .ui-fade-in on mount, .ui-fade-out before removing from DOM.
+   ----------------------------------------------------------------------------- */
+@keyframes uiFadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes uiFadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-8px); }
+}
+
+.ui-fade-in {
+  animation: uiFadeIn 0.4s ease forwards;
+}
+
+.ui-fade-out {
+  animation: uiFadeOut 0.25s ease forwards;
+}
