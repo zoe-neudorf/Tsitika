@@ -270,7 +270,7 @@
 </div>
 
 <script>
-	mapboxgl.accessToken = 'pk.eyJ1IjoiemVkc21hcHMiLCJhIjoiY21vOWFtNDNuMDc4dDJyb21tcGY5cWY5OCJ9.NHOGD71xZG0-oDQ-dZq4qg';
+	mapboxgl.accessToken = 'pk.eyJ1IjoiemVkc21hcHMiLCJhIjoiY21vOWI1dTZnMDdrNjJxb2VqZ3l3cmIwbiJ9.YafGxgbv5Hu_jfihxzzh5A';
 
 	const map = new mapboxgl.Map({
 		container: 'map',
@@ -427,11 +427,6 @@
 			source: 'Critical_Habitat',
 			paint: { 'fill-color': '#1a6ea8', 'fill-opacity': 0.5 },
 			layout: { 'visibility': 'none' }
-		});
-
-		map.addSource('TAP_Areas_Logged_Since_2021', {
-			type: 'geojson',
-			data: 'Mapbox/Logged_TAP_Since_2021.geojson'
 		});
 
 		// ── VRI <100 Years & Consolidated Cutblocks ──
@@ -1119,6 +1114,7 @@
 				// 	},
 				// 	layout: { 'visibility': 'none' }	
 				// });
+
 			const WFS_URL6 =
 				'https://openmaps.gov.bc.ca/geo/ows?' +
 				'SERVICE=WFS' +
@@ -1127,7 +1123,7 @@
 				'&TYPENAMES=pub:WHSE_FOREST_VEGETATION.VEG_CONSOLIDATED_CUT_BLOCKS_SP' +
 				'&OUTPUTFORMAT=application/json' +
 				'&SRSNAME=EPSG:4326' +
-				'&BBOX=--14161641.1045,6450367.9429,-14002346.3375,6571749.9438,EPSG:3857';
+				'&BBOX=-14161641.1045,6450367.9429,-14002346.3375,6571749.9438,EPSG:3857';
 
 			// Format: &BBOX=minLng,minLat,maxLng,maxLat,EPSG:4326
 			(async () => {
