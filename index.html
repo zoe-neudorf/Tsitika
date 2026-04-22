@@ -205,14 +205,14 @@
 		</label>
 	</div>
 
-		<!-- <div class="legend-row" data-layers="Proposed Cutblocks in TAP Deferral Areas">
+	<div class="legend-row" data-layers="Proposed Cutblocks in TAP Deferral Areas - fill">
 		<span class="legend-swatch" style="background:#eb0e96;"></span>
 		<span class="legend-label">Proposed Cutblocks in TAP Deferral Areas</span>
 		<label class="toggle">
 			<input type="checkbox" >
 			<span class="slider"></span>
 		</label>
-	</div> -->
+	</div>
 
 	<div class="legend-row" data-layers="OGMA-fill,OGMA-outline,OGMA-hover">
 		<span class="legend-swatch" style="background:grey;"></span>
@@ -808,21 +808,22 @@
 			popupbig.setLngLat(e.lngLat).setHTML(html).addTo(map);
 		});
 
-		// //add proposed cutblocks that overlap with TAP priority deferral areas
-		// map.addSource('Proposed Cutblocks in TAP Deferral Areas', {
-		// 	type: 'geojson',
-		// 	data: 'Mapbox/FC_TAP_PRI.geojson'
-		// });
+		 //add proposed cutblocks that overlap with TAP priority deferral areas
+		map.addSource('Proposed Cutblocks in TAP Deferral Areas', {
+		 	type: 'geojson',
+		 	data: 'Mapbox/FOM_in_TAP.geojson'
+		 });
 		
-		// map.addLayer({
-		// 	id: 'Proposed Cutblocks in TAP Deferral Areas',
-		// 	type: 'fill',
-		// 	source: 'Proposed Cutblocks in TAP Deferral Areas',
-		// 	paint: {
-		// 		'fill-color': '#eb0e96',
-		// 		'fill-opacity': 0.35
-		// 	}
-		// });
+		map.addLayer({
+			id: 'Proposed Cutblocks in TAP Deferral Areas - fill',
+			type: 'fill',
+			source: 'Proposed Cutblocks in TAP Deferral Areas',
+			paint: {
+				'fill-color': '#eb0e96',
+				'fill-opacity': 0.80
+			},
+			layout: { 'visibility': 'none' }	
+		});
 		
 		// ── Add Future Cutblocks ──
 			const WFS_URL5 =
