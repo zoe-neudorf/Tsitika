@@ -259,7 +259,7 @@
 		</label>
 	</div>
 
-	<div class="legend-row" data-layers="CCS-fill, VRIS-fill">
+	<div class="legend-row" data-layers="Surrounding_Young_Forests-fill">
 		<span class="legend-swatch" style="background:yellow;"></span>
 		<span class="legend-label">Surrounding Young Forests</span>
 		<label class="toggle">
@@ -1115,46 +1115,46 @@
 				// 	layout: { 'visibility': 'none' }	
 				// });
 
-			const WFS_URL6 =
-				'https://openmaps.gov.bc.ca/geo/ows?' +
-				'SERVICE=WFS' +
-				'&VERSION=2.0.0' +
-				'&REQUEST=GetFeature' +
-				'&TYPENAMES=pub:WHSE_FOREST_VEGETATION.VEG_CONSOLIDATED_CUT_BLOCKS_SP' +
-				'&OUTPUTFORMAT=application/json' +
-				'&SRSNAME=EPSG:4326' +
-				'&BBOX=-14161641.1045,6450367.9429,-14002346.3375,6571749.9438,EPSG:3857';
+			// const WFS_URL6 =
+			// 	'https://openmaps.gov.bc.ca/geo/ows?' +
+			// 	'SERVICE=WFS' +
+			// 	'&VERSION=2.0.0' +
+			// 	'&REQUEST=GetFeature' +
+			// 	'&TYPENAMES=pub:WHSE_FOREST_VEGETATION.VEG_CONSOLIDATED_CUT_BLOCKS_SP' +
+			// 	'&OUTPUTFORMAT=application/json' +
+			// 	'&SRSNAME=EPSG:4326' +
+			// 	'&BBOX=-14161641.1045,6450367.9429,-14002346.3375,6571749.9438,EPSG:3857';
 
-			// Format: &BBOX=minLng,minLat,maxLng,maxLat,EPSG:4326
-			(async () => {
-				let geojson6;
-				try {
-				const response = await fetch(WFS_URL6);
-				if (!response.ok) throw new Error(`WFS6 request failed — HTTP ${response.status}`);
-				geojson6 = await response.json();
-				console.log(`proposed cutblocks loaded: ${geojson6.features?.length ?? 0} features`);
-				} catch (err) {
-				console.error('Could not load proposed cutblocks from BC WFS:', err);
-				return;
-				}
+			// // Format: &BBOX=minLng,minLat,maxLng,maxLat,EPSG:4326
+			// (async () => {
+			// 	let geojson6;
+			// 	try {
+			// 	const response = await fetch(WFS_URL6);
+			// 	if (!response.ok) throw new Error(`WFS6 request failed — HTTP ${response.status}`);
+			// 	geojson6 = await response.json();
+			// 	console.log(`proposed cutblocks loaded: ${geojson6.features?.length ?? 0} features`);
+			// 	} catch (err) {
+			// 	console.error('Could not load proposed cutblocks from BC WFS:', err);
+			// 	return;
+			// 	}
 
-				map.addSource('CCS', {
-					type: 'geojson',
-					data: geojson6,
-					generateId: true
-				});
+			// 	map.addSource('CCS', {
+			// 		type: 'geojson',
+			// 		data: geojson6,
+			// 		generateId: true
+			// 	});
 
-				map.addLayer({
-					id: 'CCS-fill',
-					type: 'fill',
-					source: 'CCS',
-					paint: { 
-						'fill-color': 'yellow', 
-					 	},
-					 	'fill-opacity': 1.0,
-					layout: { 'visibility': 'none' }
-				});
-			})();
+			// 	map.addLayer({
+			// 		id: 'CCS-fill',
+			// 		type: 'fill',
+			// 		source: 'CCS',
+			// 		paint: { 
+			// 			'fill-color': 'yellow', 
+			// 		 	},
+			// 		 	'fill-opacity': 1.0,
+			// 		layout: { 'visibility': 'none' }
+			// 	});
+			// })();
 
 			// const WFS_URL7 =
 			// 	'https://openmaps.gov.bc.ca/geo/ows?' +
@@ -1179,16 +1179,16 @@
 			// 	return;
 			// 	}
 				
-			map.addSource('VRIS', {
+			map.addSource('Surrounding_Young_Forests', {
 					type: 'geojson',
-					data: 'Mapbox/VRI_Dissolved.geojson',
+					data: 'Mapbox/Surrounding.geojson',
 					generateId: true
 				});
 
 				map.addLayer({
-					id: 'VRIS-fill',
+					id: 'Surrounding_Young_Forests-fill',
 					type: 'fill',
-					source: 'VRIS',
+					source: 'Surrounding_Young_Forests',
 					paint:	{
 					 'fill-color': 'yellow',
 					 'fill-opacity': 1.0,
