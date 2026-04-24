@@ -152,43 +152,50 @@
 <body>
 <div id="map"></div>
 
-//Welcome card with background information
-<div id="welcome-overlay" class="ui-fade-in">
-  <div class="map-card welcome-card">
-
-    <!-- Header -->
-    <div class="map-card-header">
-      <div class="map-card-title">About This Map</div>
-      <button class="map-close-btn" id="welcome-close">×</button>
-    </div>
-
-    <!-- Body -->
-    <div class="map-card-body">
-
-      <div class="map-section-label">Overview</div>
-      <p class="welcome-text">
-        This interactive map shows proposed and historical logging activity
-        surrounding the Tsitka and, Adam and Eve watersheds.  
-		</p>
-
-		<div class="map-section-label">Included Layers</div>
-		<p class="welcome-text">
-			<span style="color:red; font-weight:600;">RED</span> stripped polygons indicate areas where logging is proposed to take place.
-			<!-- <span style="color:#eb0e96; font-weight:600;">PINK</span> polygons have been created to highlight areas where proposed cutblocks are placed in TAP Priority Deferral areas. -->
-			Old Growth Management Areas are shown using <span style="color:grey; font-weight:600;">BLACK</span> horizontal lines. These are areas where logging is prevented or restrained. 
-			<span style="color:whitesmoke; font-weight:600;">WHITE</span> dotted polygons are areas that the Technical Advisory Panel (TAP) has identified as Priority Deferral Areas.
-			<span style="color:#b85c1a; font-weight:600;">BROWN</span> polygons show small (lighter) to large (darker) old growth stands. 
-			The <span style="color:yellow; font-weight:600;">YELLOW</span> previously logged layer shows polygons from the Consolidated Cutblocks dataset, and carefully selected VRI data under 100 years of age. 
-			Critical Habitat for federally listed species at risk is identified in <span style="color:#1a6ea8; font-weight:600;">BLUE</span>.
-			For more information click on your polygon of interest and toggle layers on and off using the legend. 
-		</p>
-
-    </div>
-
-  <button id="welcome-start" class="welcome-btn">Enter Map</button>
+<div style="position:fixed; top:20px; left:16px; z-index:9999; display:flex; flex-direction:column; gap:4px;">
+  <button onclick="map.easeTo({zoom: map.getZoom()+1, duration:200})"
+    style="width:32px;height:32px;background:#161b24;color:#e2e8f0;border:1px solid #2a3140;border-radius:4px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;"
+    onmouseenter="this.style.color='#38bdf8';this.style.borderColor='#38bdf8'"
+    onmouseleave="this.style.color='#e2e8f0';this.style.borderColor='#2a3140'">+</button>
+  <button onclick="map.easeTo({zoom: map.getZoom()-1, duration:200})"
+    style="width:32px;height:32px;background:#161b24;color:#e2e8f0;border:1px solid #2a3140;border-radius:4px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;"
+    onmouseenter="this.style.color='#38bdf8';this.style.borderColor='#38bdf8'"
+    onmouseleave="this.style.color='#e2e8f0';this.style.borderColor='#2a3140'">−</button>
 </div>
 
+	//Welcome card with background information
+	<div id="welcome-overlay" class="ui-fade-in">
+	<div class="map-card welcome-card">
 
+		<!-- Header -->
+		<div class="map-card-header">
+		<div class="map-card-title">About This Map</div>
+		<button class="map-close-btn" id="welcome-close">×</button>
+		</div>
+
+		<!-- Body -->
+		<div class="map-card-body">
+
+		<div class="map-section-label">Overview</div>
+		<p class="welcome-text">
+			This interactive map shows proposed and historical logging activity
+			surrounding the Tsitka and, Adam and Eve watersheds.  
+			</p>
+
+			<div class="map-section-label">Included Layers</div>
+			<p class="welcome-text">
+				<span style="color:red; font-weight:600;">RED</span> stripped polygons indicate areas where logging is proposed to take place.
+				<!-- <span style="color:#eb0e96; font-weight:600;">PINK</span> polygons have been created to highlight areas where proposed cutblocks are placed in TAP Priority Deferral areas. -->
+				Old Growth Management Areas are shown using <span style="color:grey; font-weight:600;">BLACK</span> horizontal lines. These are areas where logging is prevented or restrained. 
+				<span style="color:whitesmoke; font-weight:600;">WHITE</span> dotted polygons are areas that the Technical Advisory Panel (TAP) has identified as Priority Deferral Areas.
+				<span style="color:#b85c1a; font-weight:600;">BROWN</span> polygons show small (lighter) to large (darker) old growth stands. 
+				The <span style="color:yellow; font-weight:600;">YELLOW</span> previously logged layer shows polygons from the Consolidated Cutblocks dataset, and carefully selected VRI data under 100 years of age. 
+				Critical Habitat for federally listed species at risk is identified in <span style="color:#1a6ea8; font-weight:600;">BLUE</span>.
+				For more information click on your polygon of interest and toggle layers on and off using the legend. 
+			</p>
+		</div>
+		<button id="welcome-start" class="welcome-btn">Enter Map</button>
+	</div>
   </div>
 </div>
 
@@ -267,6 +274,25 @@
 			<span class="slider"></span>
 		</label>
 	</div>	
+
+	<div class="legend-row" data-layers="LU-fill,LU-line,LU-hover">
+		<span class="legend-swatch" style="background:purple;"></span>
+		<span class="legend-label">Landscape Units</span>
+		<label class="toggle">
+			<input type="checkbox" >
+			<span class="slider"></span>
+		</label>
+	</div>	
+
+	<div class="legend-row" data-layers="Tsitika-fill,Tsitika-outline,Tsitika-hover">
+		<span class="legend-swatch" style="background:white;"></span>
+		<span class="legend-label">Watershed</span>
+		<label class="toggle">
+			<input type="checkbox" checked>
+			<span class="slider"></span>
+		</label>
+	</div>	
+
 </div>
 
 <script>
@@ -278,8 +304,19 @@
 		center: [-126.579666,50.469743],
 		pitch: 60,
 		bearing: 170,
-		style: 'mapbox://styles/mapbox/satellite-v9'
+		style: 'mapbox://styles/mapbox/satellite-streets-v12'
+		//satellite-v9'
 	});
+			// ── Smooth / slow down map interaction ──
+		map.dragPan.disable();                        // disable default drag
+		map.dragPan.enable({                          
+			linearity: 0.1,                           // more friction, less momentum
+			maxSpeed: 400,                            // lower top pan speed
+			deceleration: 2500                        // stops faster, less sliding
+		});
+		map.doubleClickZoom.disable();               // remove double-click zoom (accidental zooms)
+
+			
 	
 	map.setProjection('globe')
 
@@ -396,7 +433,8 @@
 
 		map.addSource('Tsitika', {
 			type:'geojson',
-			data:'Mapbox/Tsitika_Adam_Eve.geojson'
+			data:'Mapbox/Tsitika_Adam_Eve.geojson',
+			generateId: true
 		});
 
 		map.addLayer({
@@ -404,21 +442,80 @@
 			type: 'fill',
 			source: 'Tsitika',
 			layout: {},
-			paint: { 'fill-color': '#0080ff', 'fill-opacity': 0.0 }
+			paint: { 'fill-color': 'white', 'fill-opacity': 0.01 }
 		});
 
 		map.addLayer({
-			id: 'outline',
+			id: 'Tsitika-outline',
 			type: 'line',
 			source: 'Tsitika',
 			layout: {},
 			paint: { 'line-color': 'white', 'line-width': 1.5 }
 		});
+
+			map.addLayer({
+				id: 'Tsitika-hover',
+				type: 'fill',
+				source: 'Tsitika',
+				paint: {
+					'fill-color': 'white',
+					'fill-opacity': [
+						'case', ['boolean', ['feature-state', 'hover'], false], 0.05, 0
+					]
+				}
+			});
+
+			let hoveredTId = null;
+
+			map.on('mousemove', 'Tsitika-fill', (e) => {
+				map.getCanvas().style.cursor = 'pointer';
+				if (e.features.length > 0) {
+					if (hoveredTId !== null) {
+						map.setFeatureState({ source: 'Tsitika', id: hoveredTId }, { hover: false });
+					}
+					hoveredTId = e.features[0].id;
+					map.setFeatureState({ source: 'Tsitika', id: hoveredTId }, { hover: true });
+				}
+			});
+
+			map.on('mouseleave', 'Tsitika-fill', () => {
+				map.getCanvas().style.cursor = '';
+				if (hoveredTId !== null) {
+					map.setFeatureState({ source: 'Tsitika', id: hoveredTId }, { hover: false });
+				}
+				hoveredTId = null;
+			});
+
+			const popupTsitika = new mapboxgl.Popup({ closeButton: true, maxWidth: '450px' });
+
+			map.on('click', 'Tsitika-fill', (e) => {
+				console.log('Clicked Tsitika-fill', e.features[0]);
+				console.log('Properties:', Object.keys(e.features[0].properties));
+				const props = e.features[0].properties;
+				const row = (label, key) => {
+					const val = props[key];
+					if (val == null || val === '' || val === 'null') return '';
+					return `<tr>
+								<td class="popup-label" style="padding:3px 8px 3px 0">${label}</td>
+								<td class="popup-value" style="padding:3px 0">${val}</td>
+							</tr>`;
+				};
+				const html = `
+					<div class="popup-header"><span class="popup-header-title">Area</span></div>
+					<div class="popup-body">
+						<table style="border-collapse:collapse;width:100%;font-size:11px;font-family:var(--font-mono)">
+							${row('WATERSHED NAME', 'GNIS_NAME')}
+							${row('LANDSCAPE UNIT NAME', 'LANDSCAPE_UNIT_NAME')}
+						</table>
+					</div>`;
+				popupTsitika.setLngLat(e.lngLat).setHTML(html).addTo(map);
+			});
+
 		
 		// ── Critical Habitat ──
 		map.addSource('Critical_Habitat', {
 			type: 'geojson',
-			data: 'Mapbox/Critical_Habitat.geojson'
+			data: 'Mapbox/Critical_Habitat.geojson',
 		});
 
 		map.addLayer({
@@ -428,6 +525,193 @@
 			paint: { 'fill-color': '#1a6ea8', 'fill-opacity': 0.5 },
 			layout: { 'visibility': 'none' }
 		});
+
+		map.addSource('LU', {
+			type: 'geojson',
+			data: 'Mapbox/Landscape_Units.geojson',
+			generateId: true
+		});
+
+		map.addLayer({
+			id: 'LU-line',
+			type: 'line',
+			source: 'LU',
+			paint: { 'line-color': 'purple', 'line-width': 2 },
+			layout: { 'visibility': 'none' }
+		});
+
+		map.addLayer({
+			id: 'LU-fill',
+			type: 'fill',
+			source: 'LU',
+			paint: { 'fill-color': 'purple', 'fill-opacity': 0.05 },
+			layout: { 'visibility': 'none' }
+		});
+
+			map.addLayer({
+				id: 'LU-hover',
+				type: 'fill',
+				source: 'LU',
+				paint: {
+					'fill-color': 'purple',
+					'fill-opacity': [
+						'case', ['boolean', ['feature-state', 'hover'], false], 0.25, 0
+					]
+				}
+			});
+
+			let hoveredLUId = null;
+
+			map.on('mousemove', 'LU-fill', (e) => {
+				map.getCanvas().style.cursor = 'pointer';
+				if (e.features.length > 0) {
+					if (hoveredLUId !== null) {
+						map.setFeatureState({ source: 'LU', id: hoveredLUId }, { hover: false });
+					}
+					hoveredLUId = e.features[0].id;
+					map.setFeatureState({ source: 'LU', id: hoveredLUId }, { hover: true });
+				}
+			});
+
+			map.on('mouseleave', 'LU-fill', () => {
+				map.getCanvas().style.cursor = '';
+				if (hoveredLUId !== null) {
+					map.setFeatureState({ source: 'LU', id: hoveredLUId }, { hover: false });
+				}
+				hoveredLUId = null;
+			});
+
+			const popupLU = new mapboxgl.Popup({ closeButton: true, maxWidth: '450px' });
+
+			map.on('click', 'LU-fill', (e) => {
+				console.log('Clicked LU-fill', e.features[0]);
+				console.log('Properties:', Object.keys(e.features[0].properties));
+				const props = e.features[0].properties;
+				const row = (label, key) => {
+					const val = props[key];
+					if (val == null || val === '' || val === 'null') return '';
+					return `<tr>
+								<td class="popup-label" style="padding:3px 8px 3px 0">${label}</td>
+								<td class="popup-value" style="padding:3px 0">${val}</td>
+							</tr>`;
+				};
+				const html = `
+					<div class="popup-header"><span class="popup-header-title">Landscape Unit</span></div>
+					<div class="popup-body">
+						<table style="border-collapse:collapse;width:100%;font-size:11px;font-family:var(--font-mono)">
+							${row('NAME', 'LANDSCAPE_UNIT_NAME')}
+							${row('BIODIVERSITY_EMPHASIS', 'BIODIVERSITY_EMPHASIS_OPTION')}
+						</table>
+					</div>`;
+				popupLU.setLngLat(e.lngLat).setHTML(html).addTo(map);
+			});
+
+		// ── Add BC Parks & Protected Areas ──
+		const WFS_URL_PARKS =
+			'https://openmaps.gov.bc.ca/geo/ows?' +
+			'SERVICE=WFS' +
+			'&VERSION=2.0.0' +
+			'&REQUEST=GetFeature' +
+			'&TYPENAMES=pub:WHSE_TANTALIS.TA_PARK_ECORES_PA_SVW' +
+			'&OUTPUTFORMAT=application/json' +
+			'&SRSNAME=EPSG:4326' +
+			'&BBOX=-127.369995,49.774170,-125.211182,50.809406,EPSG:4326';
+
+		(async () => {
+			let geojsonParks;
+			try {
+				const response = await fetch(WFS_URL_PARKS);
+				if (!response.ok) throw new Error(`WFS Parks request failed — HTTP ${response.status}`);
+				geojsonParks = await response.json();
+				console.log(`BC Parks loaded: ${geojsonParks.features?.length ?? 0} features`);
+			} catch (err) {
+				console.error('Could not load BC Parks from BC WFS:', err);
+				return;
+			}
+
+			map.addSource('bc_parks', {
+				type: 'geojson',
+				data: geojsonParks,
+				generateId: true
+			});
+
+			map.addLayer({
+				id: 'bc_parks-fill',
+				type: 'fill',
+				source: 'bc_parks',
+				paint: {
+					'fill-color': '#6abf69',
+					'fill-opacity': 0.25
+				}
+			});
+
+			map.addLayer({
+				id: 'bc_parks-outline',
+				type: 'line',
+				source: 'bc_parks',
+				paint: { 'line-color': '#2e7d32', 'line-width': 1, 'line-opacity': 0.8 }
+			});
+
+			map.addLayer({
+				id: 'bc_parks-hover',
+				type: 'fill',
+				source: 'bc_parks',
+				paint: {
+					'fill-color': '#4caf50',
+					'fill-opacity': [
+						'case', ['boolean', ['feature-state', 'hover'], false], 0.25, 0
+					]
+				}
+			});
+
+			let hoveredParkId = null;
+
+			map.on('mousemove', 'bc_parks-fill', (e) => {
+				map.getCanvas().style.cursor = 'pointer';
+				if (e.features.length > 0) {
+					if (hoveredParkId !== null) {
+						map.setFeatureState({ source: 'bc_parks', id: hoveredParkId }, { hover: false });
+					}
+					hoveredParkId = e.features[0].id;
+					map.setFeatureState({ source: 'bc_parks', id: hoveredParkId }, { hover: true });
+				}
+			});
+
+			map.on('mouseleave', 'bc_parks-fill', () => {
+				map.getCanvas().style.cursor = '';
+				if (hoveredParkId !== null) {
+					map.setFeatureState({ source: 'bc_parks', id: hoveredParkId }, { hover: false });
+				}
+				hoveredParkId = null;
+			});
+
+			const popupParks = new mapboxgl.Popup({ closeButton: true, maxWidth: '450px' });
+
+			map.on('click', 'bc_parks-fill', (e) => {
+				console.log('Clicked bc_parks-fill', e.features[0]);
+				console.log('Properties:', Object.keys(e.features[0].properties));
+				const props = e.features[0].properties;
+				const row = (label, key) => {
+					const val = props[key];
+					if (val == null || val === '' || val === 'null') return '';
+					return `<tr>
+								<td class="popup-label" style="padding:3px 8px 3px 0">${label}</td>
+								<td class="popup-value" style="padding:3px 0">${val}</td>
+							</tr>`;
+				};
+				const html = `
+					<div class="popup-header"><span class="popup-header-title">BC Park / Protected Area</span></div>
+					<div class="popup-body">
+						<table style="border-collapse:collapse;width:100%;font-size:11px;font-family:var(--font-mono)">
+							${row('NAME', 'PROTECTED_LANDS_NAME')}
+							${row('DESIGNATION', 'PROTECTED_LANDS_DESIGNATION')}
+							${row('STATUS', 'PARK_CLASS')}
+						</table>
+					</div>`;
+				popupParks.setLngLat(e.lngLat).setHTML(html).addTo(map);
+			});
+
+		})();
 
 		// ── VRI <100 Years & Consolidated Cutblocks ──
 		map.addSource('CC', {
@@ -442,7 +726,7 @@
 			source: 'CC',
 			paint: { 
 				'fill-color': 'yellow', 
-				'fill-opacity': 0.35 },
+				'fill-opacity': .70 },
 			layout: { 'visibility': 'none' }
 		});
 
@@ -538,7 +822,7 @@
                 	'5', 'yellow',
 						'transparent'
 				],
-					'fill-opacity': 0.35,
+					'fill-opacity': .700,
 				},
 				layout: { 'visibility': 'none' }	
 			});
@@ -575,8 +859,8 @@
 					'2', 'yellow',
 					'3', 'yellow',
 					'4', 'yellow',
-                	'5', 'yellow',
-						'transparent'
+					'5', 'yellow',
+					'transparent'
 				],
 				'fill-opacity': [
 					'case', ['boolean', ['feature-state', 'hover'], false], 0.15, 0
@@ -630,12 +914,42 @@
 			popup4.setLngLat(e.lngLat).setHTML(html).addTo(map);
 		});
 
-		// ── TAP Deferral Areas ──
-		map.addSource('TAP_Deferral', {
-			type: 'geojson',
-			data: 'Mapbox/TAP_PD.geojson',
-			generateId: true
-		});
+		// ── TAP Priority Deferral Areas (WFS) ──
+		// const WFS_URL_TAP =
+		// 	'https://openmaps.gov.bc.ca/geo/ows?' +
+		// 	'SERVICE=WFS' +
+		// 	'&VERSION=2.0.0' +
+		// 	'&REQUEST=GetFeature' +
+		// 	'&TYPENAMES=pub:WHSE_FOREST_VEGETATION.OGSR_TAP_PRIORITY_DEF_AREA_SP' +
+		// 	'&OUTPUTFORMAT=application/json' +
+		// 	'&SRSNAME=EPSG:4326' +
+		// 	'&BBOX=-127.369995,49.774170,-125.211182,50.809406,EPSG:4326';
+
+		// (async () => {
+		// 	let geojsonTAP;
+		// 	try {
+		// 		const response = await fetch(WFS_URL_TAP);
+		// 		if (!response.ok) throw new Error(`WFS TAP request failed — HTTP ${response.status}`);
+		// 		geojsonTAP = await response.json();
+		// 		console.log(`TAP Deferral loaded: ${geojsonTAP.features?.length ?? 0} features`);
+		// 	} catch (err) {
+		// 		console.error('Could not load TAP Deferral from BC WFS:', err);
+		// 		return;
+		// 	}
+
+		// 	const clippedTAP = {
+		// 		...geojsonTAP,
+		// 		features: geojsonTAP.features.filter(f =>
+		// 			turf.booleanIntersects(f, Tsitika_Adam_Eve)
+		// 		)
+		// 	};
+		// 	console.log(`TAP Deferral within Tsitika: ${clippedTAP.features.length}`);
+
+			map.addSource('TAP_Deferral', {
+				type: 'geojson',
+				data: 'Mapbox/TAP_PD.geojson',
+				generateId: true
+			});
 
 		map.addLayer({
 			id: 'TAP_Deferral-fill',
@@ -717,96 +1031,127 @@
 
 		// ── Forest Stand Size ──
 		
-		map.addSource('big_trees', {
-			type: 'geojson',
-			data: 'Mapbox/Big_Trees.geojson',
-			generateId: true
-		});
+		// ── TAP Big Trees (WFS) ──
+		// const WFS_URL_BIGTREES =
+		// 	'https://openmaps.gov.bc.ca/geo/ows?' +
+		// 	'SERVICE=WFS' +
+		// 	'&VERSION=2.0.0' +
+		// 	'&REQUEST=GetFeature' +
+		// 	'&TYPENAMES=pub:WHSE_FOREST_VEGETATION.OGSR_TAP_BIG_TREED_OG_SP' +
+		// 	'&OUTPUTFORMAT=application/json' +
+		// 	'&SRSNAME=EPSG:4326' +
+		// 	'&BBOX=-127.369995,49.774170,-125.211182,50.809406,EPSG:4326';
 
-		map.addLayer({
-			id: 'big_trees-fill',
-			type: 'fill',
-			source: 'big_trees',
-			paint: {
-				'fill-color': [
-					'match',
-					['get', 'TAP_CLASSIFICATION_LABEL'],
-					'Very Large', '#7a2e0a',
-					'Large', '#b85c1a',
-					'Medium', '#d4813a',
-					'Small', '#f0c080',
-					'Very Small', '#fde8c8',
-				 	'transparent'
-				],
-				'fill-opacity': .5 },
-			layout: {'visibility': 'none'},
-		});
+		// (async () => {
+		// 	let geojsonBigTrees;
+		// 	try {
+		// 		const response = await fetch(WFS_URL_BIGTREES);
+		// 		if (!response.ok) throw new Error(`WFS Big Trees request failed — HTTP ${response.status}`);
+		// 		geojsonBigTrees = await response.json();
+		// 		console.log(`TAP Big Trees loaded: ${geojsonBigTrees.features?.length ?? 0} features`);
+		// 	} catch (err) {
+		// 		console.error('Could not load TAP Big Trees from BC WFS:', err);
+		// 		return;
+		// 	}
 
-		map.addLayer({
-			id: 'big_trees-hover',
-			type: 'fill',
-			source: 'big_trees',
-			paint: {
-				'fill-color': [
-					'match',
-					['get', 'TAP_CLASSIFICATION_LABEL'],
-					'Very Large', '#7a2e0a',
-					'Large', '#b85c1a',
-					'Medium', '#d4813a',
-					'Small', '#f0c080',
-					'Very Small', '#fde8c8',
-				 	'transparent'
-				],
-				'fill-opacity': [
-					'case', ['boolean', ['feature-state', 'hover'], false], 0.15, 0
-				]
-			}
-		});
+		// 	const clippedBigTrees = {
+		// 		...geojsonBigTrees,
+		// 		features: geojsonBigTrees.features.filter(f =>
+		// 			turf.booleanIntersects(f, Tsitika_Adam_Eve)
+		// 		)
+		// 	};
+		// 	console.log(`TAP Big Trees within Tsitika: ${clippedBigTrees.features.length}`);
 
-		let hoveredbigId = null;
+			map.addSource('big_trees', {
+				type: 'geojson',
+				data: 'Mapbox/Big_Trees.geojson',
+				generateId: true
+			});
 
-		map.on('mousemove', 'big_trees-fill', (e) => {
-			map.getCanvas().style.cursor = 'pointer';
-			if (e.features.length > 0) {
+			map.addLayer({
+				id: 'big_trees-fill',
+				type: 'fill',
+				source: 'big_trees',
+				paint: {
+					'fill-color': [
+						'match',
+						['get', 'TAP_CLASSIFICATION_LABEL'],
+						'Very Large', '#7a2e0a',
+						'Large', '#b85c1a',
+						'Medium', '#d4813a',
+						'Small', '#f0c080',
+						'Very Small', '#fde8c8',
+						'transparent'
+					],
+					'fill-opacity': .5 },
+				layout: {'visibility': 'none'},
+			});
+
+			map.addLayer({
+				id: 'big_trees-hover',
+				type: 'fill',
+				source: 'big_trees',
+				paint: {
+					'fill-color': [
+						'match',
+						['get', 'TAP_CLASSIFICATION_LABEL'],
+						'Very Large', '#7a2e0a',
+						'Large', '#b85c1a',
+						'Medium', '#d4813a',
+						'Small', '#f0c080',
+						'Very Small', '#fde8c8',
+						'transparent'
+					],
+					'fill-opacity': [
+						'case', ['boolean', ['feature-state', 'hover'], false], 0.15, 0
+					]
+				}
+			});
+
+			let hoveredbigId = null;
+
+			map.on('mousemove', 'big_trees-fill', (e) => {
+				map.getCanvas().style.cursor = 'pointer';
+				if (e.features.length > 0) {
+					if (hoveredbigId !== null) {
+						map.setFeatureState({ source: 'big_trees', id: hoveredbigId }, { hover: false });
+					}
+					hoveredbigId = e.features[0].id;
+					map.setFeatureState({ source: 'big_trees', id: hoveredbigId }, { hover: true });
+				}
+			});
+
+			map.on('mouseleave', 'big_trees-fill', () => {
+				map.getCanvas().style.cursor = '';
 				if (hoveredbigId !== null) {
 					map.setFeatureState({ source: 'big_trees', id: hoveredbigId }, { hover: false });
 				}
-				hoveredbigId = e.features[0].id;
-				map.setFeatureState({ source: 'big_trees', id: hoveredbigId }, { hover: true });
-			}
-		});
+				hoveredbigId = null;
+			});
 
-		map.on('mouseleave', 'big_trees-fill', () => {
-			map.getCanvas().style.cursor = '';
-			if (hoveredbigId !== null) {
-				map.setFeatureState({ source: 'big_trees', id: hoveredbigId }, { hover: false });
-			}
-			hoveredbigId = null;
-		});
+			const popupbig = new mapboxgl.Popup({ closeButton: true, maxWidth: '450px' });
 
-		const popupbig = new mapboxgl.Popup({ closeButton: true, maxWidth: '450px' });
-
-		map.on('click', 'big_trees-fill', (e) => {
-			const props = e.features[0].properties;
-			const row = (label, key) => {
-				const val = props[key];
-				if (val == null || val === '' || val === 'null') return '';
-				return `<tr>
-							<td class="popup-label" style="padding:3px 8px 3px 0">${label}</td>
-							<td class="popup-value" style="padding:3px 0">${val}</td>
-						</tr>`;
-			};
-			const html = `
-				<div class="popup-header"><span class="popup-header-title">Stand Information</span></div>
-				<div class="popup-body">
-					<table style="border-collapse:collapse;width:100%;font-size:11px;font-family:var(--font-mono)">
-						${row('STAND SIZE', 'TAP_CLASSIFICATION_LABEL')}
-						${row('BEC CLASSIFICATION', 'BGC_LABEL')}
-						${row('AREA (HA)', 'AREA_HA')}
-					</table>
-				</div>`;
-			popupbig.setLngLat(e.lngLat).setHTML(html).addTo(map);
-		});
+			map.on('click', 'big_trees-fill', (e) => {
+				const props = e.features[0].properties;
+				const row = (label, key) => {
+					const val = props[key];
+					if (val == null || val === '' || val === 'null') return '';
+					return `<tr>
+								<td class="popup-label" style="padding:3px 8px 3px 0">${label}</td>
+								<td class="popup-value" style="padding:3px 0">${val}</td>
+							</tr>`;
+				};
+				const html = `
+					<div class="popup-header"><span class="popup-header-title">Stand Information</span></div>
+					<div class="popup-body">
+						<table style="border-collapse:collapse;width:100%;font-size:11px;font-family:var(--font-mono)">
+							${row('STAND SIZE', 'TAP_CLASSIFICATION_LABEL')}
+							${row('BEC CLASSIFICATION', 'BGC_LABEL')}
+							${row('AREA (HA)', 'AREA_HA')}
+						</table>
+					</div>`;
+				popupbig.setLngLat(e.lngLat).setHTML(html).addTo(map);
+			});
 
 		 //add proposed cutblocks that overlap with TAP priority deferral areas
 		map.addSource('Proposed Cutblocks in TAP Deferral Areas', {
@@ -1182,7 +1527,7 @@
 				
 			map.addSource('Surrounding_Young_Forests', {
 					type: 'geojson',
-					data: 'Mapbox/Surrounding.geojson',
+					data: 'Mapbox/VRI_Dissolved.geojson',
 					generateId: true
 				});
 
@@ -1192,7 +1537,7 @@
 					source: 'Surrounding_Young_Forests',
 					paint:	{
 					 'fill-color': 'yellow',
-					 'fill-opacity': 1.0,
+					 'fill-opacity': .95,
 					},
 					layout: { 'visibility': 'none' }
 				});
@@ -1303,33 +1648,27 @@
 			header.addEventListener('click', toggleMinimize);
 		} // end renderWelcomeCard()
 
+		// ── Welcome overlay ──
+		const overlay = document.getElementById('welcome-overlay');
+		const closeBtn = document.getElementById('welcome-close');
+		const startBtn = document.getElementById('welcome-start');
+		const dontShowCheckbox = document.getElementById('dont-show-again');
 
-		//welcome card button interactions
-		document.addEventListener('DOMContentLoaded',()=>{
-			const overlay = document.getElementById('welcome-overlay');
-			const closeBtn = document.getElementById('welcome-close');
-			const startBtn = document.getElementById('welcome-start');
-			const dontShowCheckbox = document.getElementById('dont-show-again');
-
-			function closeWelcome() {
+		function closeWelcome() {
 			if (dontShowCheckbox?.checked) {
 				sessionStorage.setItem('hideWelcome', 'true');
 			}
-
 			overlay.classList.remove('ui-fade-in');
 			overlay.classList.add('ui-fade-out');
+			setTimeout(() => { overlay.style.display = 'none'; }, 250);
+		}
 
-			setTimeout(() => {
-				overlay.style.display = 'none';
-			}, 250);
-			}
+		closeBtn.addEventListener('click', closeWelcome);
+		startBtn.addEventListener('click', closeWelcome);
 
-			closeBtn.addEventListener('click', closeWelcome);
-			startBtn.addEventListener('click', closeWelcome);
-
-			if (sessionStorage.getItem('hideWelcome') === 'true') {overlay.style.display = 'none'
-			}
-		});
+		if (sessionStorage.getItem('hideWelcome') === 'true') {
+			overlay.style.display = 'none';
+		}
 
 </script>
 </body>
