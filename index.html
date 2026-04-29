@@ -152,16 +152,17 @@
 <body>
 <div id="map"></div>
 
-<div style="position:fixed; top:20px; left:16px; z-index:9999; display:flex; flex-direction:column; gap:4px;">
-  <button onclick="map.easeTo({zoom: map.getZoom()+1, duration:200})"
-    style="width:32px;height:32px;background:#161b24;color:#e2e8f0;border:1px solid #2a3140;border-radius:4px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;"
-    onmouseenter="this.style.color='#38bdf8';this.style.borderColor='#38bdf8'"
-    onmouseleave="this.style.color='#e2e8f0';this.style.borderColor='#2a3140'">+</button>
-  <button onclick="map.easeTo({zoom: map.getZoom()-1, duration:200})"
-    style="width:32px;height:32px;background:#161b24;color:#e2e8f0;border:1px solid #2a3140;border-radius:4px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;"
-    onmouseenter="this.style.color='#38bdf8';this.style.borderColor='#38bdf8'"
-    onmouseleave="this.style.color='#e2e8f0';this.style.borderColor='#2a3140'">−</button>
-</div>
+	//Custom Zoom Controls
+	<div style="position:fixed; top:20px; left:16px; z-index:9999; display:flex; flex-direction:column; gap:4px;">
+	<button onclick="map.easeTo({zoom: map.getZoom()+1, duration:200})"
+		style="width:32px;height:32px;background:#161b24;color:#e2e8f0;border:1px solid #2a3140;border-radius:4px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;"
+		onmouseenter="this.style.color='#38bdf8';this.style.borderColor='#38bdf8'"
+		onmouseleave="this.style.color='#e2e8f0';this.style.borderColor='#2a3140'">+</button>
+	<button onclick="map.easeTo({zoom: map.getZoom()-1, duration:200})"
+		style="width:32px;height:32px;background:#161b24;color:#e2e8f0;border:1px solid #2a3140;border-radius:4px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;"
+		onmouseenter="this.style.color='#38bdf8';this.style.borderColor='#38bdf8'"
+		onmouseleave="this.style.color='#e2e8f0';this.style.borderColor='#2a3140'">−</button>
+	</div>
 
 	//Welcome card with background information
 	<div id="welcome-overlay" class="ui-fade-in">
@@ -305,22 +306,20 @@
 		pitch: 60,
 		bearing: 170,
 		style: 'mapbox://styles/mapbox/satellite-streets-v12'
-		//satellite-v9'
 	});
-			// ── Smooth / slow down map interaction ──
-		map.dragPan.disable();                        // disable default drag
-		map.dragPan.enable({                          
-			linearity: 0.1,                           // more friction, less momentum
-			maxSpeed: 400,                            // lower top pan speed
-			deceleration: 2500                        // stops faster, less sliding
-		});
-		map.doubleClickZoom.disable();               // remove double-click zoom (accidental zooms)
+		
+	//Smooth / slow down map interaction
+	map.dragPan.disable();                        // disable default drag
+	map.dragPan.enable({                          
+		linearity: 0.1,                           // more friction, less momentum
+		maxSpeed: 400,                            // lower top pan speed
+		deceleration: 2500                        // stops faster, less sliding
+	});
+	map.doubleClickZoom.disable();               // remove double-click zoom (accidental zooms)
 
-			
-	
 	map.setProjection('globe')
 
-	// FIX: Declare at module level so both WFS async blocks can access it for
+	// FIX: Declare at module level so both WFS async blocks can access it 
 	// turf.booleanIntersects() — was previously undefined inside those blocks
 	let Tsitika_Adam_Eve = null;
 
@@ -431,6 +430,7 @@
 
 		map.addImage('dot-grid2', imageData, { pixelRatio: 2 });
 
+		//Add watershed and other area boundaries
 		map.addSource('Tsitika', {
 			type:'geojson',
 			data:'Mapbox/Tsitika_Adam_Eve.geojson',
@@ -512,7 +512,7 @@
 			});
 
 		
-		// ── Critical Habitat ──
+		// Add Critical Habitat
 		map.addSource('Critical_Habitat', {
 			type: 'geojson',
 			data: 'Mapbox/Critical_Habitat.geojson',
@@ -526,6 +526,7 @@
 			layout: { 'visibility': 'none' }
 		});
 
+		//Add Landscape Units for Reference
 		map.addSource('LU', {
 			type: 'geojson',
 			data: 'Mapbox/Landscape_Units.geojson',
@@ -606,7 +607,7 @@
 				popupLU.setLngLat(e.lngLat).setHTML(html).addTo(map);
 			});
 
-		// ── Add BC Parks & Protected Areas ──
+		// Add BC Parks & Protected Areas ──
 		const WFS_URL_PARKS =
 			'https://openmaps.gov.bc.ca/geo/ows?' +
 			'SERVICE=WFS' +
@@ -713,7 +714,7 @@
 
 		})();
 
-		// ── VRI <100 Years & Consolidated Cutblocks ──
+		//Consolidated Cutblocks
 		map.addSource('CC', {
 			type: 'geojson',
 			data: 'Mapbox/CC.geojson',
@@ -801,7 +802,7 @@
 			popup3.setLngLat(e.lngLat).setHTML(html).addTo(map);
 		});
 
-        // ── VRI <100 Years & Consolidated Cutblocks ──
+        // ── VRI <100 Years 
 		map.addSource('VRI', {
 			type: 'geojson',
 			data: 'Mapbox/VRI.geojson',
@@ -914,42 +915,12 @@
 			popup4.setLngLat(e.lngLat).setHTML(html).addTo(map);
 		});
 
-		// ── TAP Priority Deferral Areas (WFS) ──
-		// const WFS_URL_TAP =
-		// 	'https://openmaps.gov.bc.ca/geo/ows?' +
-		// 	'SERVICE=WFS' +
-		// 	'&VERSION=2.0.0' +
-		// 	'&REQUEST=GetFeature' +
-		// 	'&TYPENAMES=pub:WHSE_FOREST_VEGETATION.OGSR_TAP_PRIORITY_DEF_AREA_SP' +
-		// 	'&OUTPUTFORMAT=application/json' +
-		// 	'&SRSNAME=EPSG:4326' +
-		// 	'&BBOX=-127.369995,49.774170,-125.211182,50.809406,EPSG:4326';
-
-		// (async () => {
-		// 	let geojsonTAP;
-		// 	try {
-		// 		const response = await fetch(WFS_URL_TAP);
-		// 		if (!response.ok) throw new Error(`WFS TAP request failed — HTTP ${response.status}`);
-		// 		geojsonTAP = await response.json();
-		// 		console.log(`TAP Deferral loaded: ${geojsonTAP.features?.length ?? 0} features`);
-		// 	} catch (err) {
-		// 		console.error('Could not load TAP Deferral from BC WFS:', err);
-		// 		return;
-		// 	}
-
-		// 	const clippedTAP = {
-		// 		...geojsonTAP,
-		// 		features: geojsonTAP.features.filter(f =>
-		// 			turf.booleanIntersects(f, Tsitika_Adam_Eve)
-		// 		)
-		// 	};
-		// 	console.log(`TAP Deferral within Tsitika: ${clippedTAP.features.length}`);
-
-			map.addSource('TAP_Deferral', {
-				type: 'geojson',
-				data: 'Mapbox/TAP_PD.geojson',
-				generateId: true
-			});
+		//Add TAP Deferral Areas
+		map.addSource('TAP_Deferral', {
+			type: 'geojson',
+			data: 'Mapbox/TAP_PD.geojson',
+			generateId: true
+		});
 
 		map.addLayer({
 			id: 'TAP_Deferral-fill',
@@ -1029,39 +1000,7 @@
 			popup1.setLngLat(e.lngLat).setHTML(html).addTo(map);
 		});
 
-		// ── Forest Stand Size ──
-		
-		// ── TAP Big Trees (WFS) ──
-		// const WFS_URL_BIGTREES =
-		// 	'https://openmaps.gov.bc.ca/geo/ows?' +
-		// 	'SERVICE=WFS' +
-		// 	'&VERSION=2.0.0' +
-		// 	'&REQUEST=GetFeature' +
-		// 	'&TYPENAMES=pub:WHSE_FOREST_VEGETATION.OGSR_TAP_BIG_TREED_OG_SP' +
-		// 	'&OUTPUTFORMAT=application/json' +
-		// 	'&SRSNAME=EPSG:4326' +
-		// 	'&BBOX=-127.369995,49.774170,-125.211182,50.809406,EPSG:4326';
-
-		// (async () => {
-		// 	let geojsonBigTrees;
-		// 	try {
-		// 		const response = await fetch(WFS_URL_BIGTREES);
-		// 		if (!response.ok) throw new Error(`WFS Big Trees request failed — HTTP ${response.status}`);
-		// 		geojsonBigTrees = await response.json();
-		// 		console.log(`TAP Big Trees loaded: ${geojsonBigTrees.features?.length ?? 0} features`);
-		// 	} catch (err) {
-		// 		console.error('Could not load TAP Big Trees from BC WFS:', err);
-		// 		return;
-		// 	}
-
-		// 	const clippedBigTrees = {
-		// 		...geojsonBigTrees,
-		// 		features: geojsonBigTrees.features.filter(f =>
-		// 			turf.booleanIntersects(f, Tsitika_Adam_Eve)
-		// 		)
-		// 	};
-		// 	console.log(`TAP Big Trees within Tsitika: ${clippedBigTrees.features.length}`);
-
+		// Add Big Trees Layer
 			map.addSource('big_trees', {
 				type: 'geojson',
 				data: 'Mapbox/Big_Trees.geojson',
@@ -1170,7 +1109,7 @@
 			layout: { 'visibility': 'none' }	
 		});
 		
-		// ── Add Future Cutblocks ──
+		// Add forest operations map proposed cutblocks. 
 			const WFS_URL5 =
 				'https://openmaps.gov.bc.ca/geo/ows?' +
 				'SERVICE=WFS' +
@@ -1181,7 +1120,6 @@
 				'&SRSNAME=EPSG:4326' +
 				'&BBOX=-127.369995,49.774170,-125.211182,50.809406,EPSG:4326';
 
-			// Format: &BBOX=minLng,minLat,maxLng,maxLat,EPSG:4326
 			(async () => {
 				let geojson5;
 				try {
@@ -1282,9 +1220,7 @@
 
 	 })();
 
-		//-----------------------------------------------------------------------------
-		//OGMA  — WFS REQUEST URL
-		// -----------------------------------------------------------------------------
+		// Add OGMA 
 			const WFS_URL =
 				'https://openmaps.gov.bc.ca/geo/ows?' +
 				'SERVICE=WFS' +
@@ -1417,114 +1353,6 @@
 
 			})(); // end OGMA cutblocks async block 
 
-            // //Surrounding VRI and CC blocks
-			// 	map.addSource('CC', {
-			// 	type: 'geojson',
-			// 	data: 'Mapbox/Near_CC.geojson',        // <-- only features inside the boundary
-			// 	generateId: true
-			// 	});
-			// 	// Fill layer — semi-transparent polygon interior
-				// map.addLayer({
-				// 	id: 'CC-fill',
-				// 	type: 'fill',
-				// 	source: 'CC',
-				// 	paint: {
-				// 		'fill-color': 'yellow',
-				// 		'fill-opacity': 0.35,
-				// 	},
-				// 	layout: { 'visibility': 'none' }
-				// });
-
-				// map.addSource('VRI', {
-				// 	type: 'geojson',
-				// 	data: 'Mapbox/Surrounding_VRI.geojson',  // <-- only features inside the boundary
-				// 	generateId: true
-				// });
-
-				// // Fill layer — semi-transparent polygon interior
-				// map.addLayer({
-				// 	id: 'VRI-fill',
-				// 	type: 'fill',
-				// 	source: 'VRI',
-				// 	paint: {'fill-color':[
-				// 		'match',
-				// 		['get', 'PROJ_AGE_CLASS_CD_1'],
-				// 		'1', 'yellow',
-				// 		'2', 'yellow',
-				// 		'3', 'yellow',
-				// 		'4', 'yellow',
-				// 		'5', 'yellow',
-				// 		'transparent'
-				// 	],
-				// 		'fill-opacity': 0.35,
-				// 	},
-				// 	layout: { 'visibility': 'none' }	
-				// });
-
-			// const WFS_URL6 =
-			// 	'https://openmaps.gov.bc.ca/geo/ows?' +
-			// 	'SERVICE=WFS' +
-			// 	'&VERSION=2.0.0' +
-			// 	'&REQUEST=GetFeature' +
-			// 	'&TYPENAMES=pub:WHSE_FOREST_VEGETATION.VEG_CONSOLIDATED_CUT_BLOCKS_SP' +
-			// 	'&OUTPUTFORMAT=application/json' +
-			// 	'&SRSNAME=EPSG:4326' +
-			// 	'&BBOX=-14161641.1045,6450367.9429,-14002346.3375,6571749.9438,EPSG:3857';
-
-			// // Format: &BBOX=minLng,minLat,maxLng,maxLat,EPSG:4326
-			// (async () => {
-			// 	let geojson6;
-			// 	try {
-			// 	const response = await fetch(WFS_URL6);
-			// 	if (!response.ok) throw new Error(`WFS6 request failed — HTTP ${response.status}`);
-			// 	geojson6 = await response.json();
-			// 	console.log(`proposed cutblocks loaded: ${geojson6.features?.length ?? 0} features`);
-			// 	} catch (err) {
-			// 	console.error('Could not load proposed cutblocks from BC WFS:', err);
-			// 	return;
-			// 	}
-
-			// 	map.addSource('CCS', {
-			// 		type: 'geojson',
-			// 		data: geojson6,
-			// 		generateId: true
-			// 	});
-
-			// 	map.addLayer({
-			// 		id: 'CCS-fill',
-			// 		type: 'fill',
-			// 		source: 'CCS',
-			// 		paint: { 
-			// 			'fill-color': 'yellow', 
-			// 		 	},
-			// 		 	'fill-opacity': 1.0,
-			// 		layout: { 'visibility': 'none' }
-			// 	});
-			// })();
-
-			// const WFS_URL7 =
-			// 	'https://openmaps.gov.bc.ca/geo/ows?' +
-			// 	'SERVICE=WFS' +
-			// 	'&VERSION=2.0.0' +
-			// 	'&REQUEST=GetFeature' +
-			// 	'&TYPENAMES=pub:WHSE_FOREST_VEGETATION.VEG_COMP_LYR_R1_POLY' +
-			// 	'&OUTPUTFORMAT=application/json' +
-			// 	'&SRSNAME=EPSG:4326' +
-			// 	'&BBOX=-14161641.1045,6455565.6609,-14003875.0781,6571749.9438,EPSG:3857';// only needed cols
-
-			// // Format: &BBOX=minLng,minLat,maxLng,maxLat,EPSG:4326
-			// (async () => {
-			// 	let geojson7;
-			// 	try {
-			// 	const response = await fetch(WFS_URL7);
-			// 	if (!response.ok) throw new Error(`WFS7 request failed — HTTP ${response.status}`);
-			// 	geojson7 = await response.json();
-			// 	console.log(`proposed cutblocks loaded: ${geojson7.features?.length ?? 0} features`);
-			// 	} catch (err) {
-			// 	console.error('Could not load proposed cutblocks from BC WFS:', err);
-			// 	return;
-			// 	}
-				
 			map.addSource('Surrounding_Young_Forests', {
 					type: 'geojson',
 					data: 'Mapbox/VRI_Dissolved.geojson',
@@ -1565,10 +1393,7 @@
 			});
 		});
 
-
-		// =============================================================================
-		// WELCOME CARD — MAP INSTRUCTIONS
-		// -----------------------------------------------------------------------------
+	// WELCOME CARD — MAP INSTRUCTIONS
 		// Call renderWelcomeCard on page load
 		if (localStorage.getItem('fom-welcome-dismissed') === 'true') {
 			// User opted out — don't show the card
@@ -1630,9 +1455,7 @@
 
 			document.getElementById('map').appendChild(card);				
 
-			// -------------------------------------------------------------------------
 			// MINIMIZE / EXPAND HANDLER
-			// -------------------------------------------------------------------------
 			let isMinimized = false;
 			const minimizeBtn = card.querySelector('#wc-minimize-btn');
 			const header = card.querySelector('#wc-header');
